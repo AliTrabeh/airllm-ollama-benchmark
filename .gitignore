@@ -57,7 +57,7 @@ coverage.xml
 notebooks/.ipynb_checkpoints/
 
 # Model files — too large for git
-models/
+/models/
 *.gguf
 *.safetensors
 *.bin
