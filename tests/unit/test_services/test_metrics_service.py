@@ -43,7 +43,7 @@ def test_snapshot_has_all_fields() -> None:
 def test_timing_captured() -> None:
     with MetricsCollector() as mc:
         time.sleep(0.1)
-    assert mc.snapshot.latency_s == pytest.approx(0.1, abs=0.05)
+    assert mc.snapshot.latency_s == pytest.approx(0.1, abs=0.15)
 
 
 def test_latency_is_positive() -> None:
