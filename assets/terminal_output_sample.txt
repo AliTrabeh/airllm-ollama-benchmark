@@ -1,0 +1,20 @@
+$ uv run airllm-benchmark --method ollama --max-tokens 20 --verbose
+
+airllm-benchmark v1.00  |  method=ollama  |  tokens=20
+{
+  "method": "ollama",
+  "model_id": "llama3.2:3b",
+  "prompt": "Explain quantum entanglement in one sentence.",
+  "output": "Quantum entanglement is a phenomenon where two or more particles become connected in such a way that",
+  "latency_s": 12.45399190000171,
+  "ram_peak_mb": 505.14453125,
+  "vram_peak_mb": 0.0,
+  "tokens_generated": 20,
+  "tokens_per_second": 125.36905515611582,
+  "disk_gb": 0.0,
+  "cost_estimate": "~0.00069 kWh @ 200W TDP",
+  "error": "",
+  "timestamp": "2026-06-22T23:30:56.330596+00:00"
+}
+
+Saved -> results\run_20260622T233056Z_ollama.json

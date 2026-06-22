@@ -145,6 +145,9 @@ uv run airllm-benchmark --method airllm --max-tokens 20
 First run downloads Mistral-7B-v0.1 (~14 GB) to `./models/`. Inference is slow by design —
 AirLLM pages one transformer layer at a time from disk into RAM.
 
+A real captured terminal output sample (not a mock-up) is saved at
+[`assets/terminal_output_sample.txt`](assets/terminal_output_sample.txt).
+
 ### Run all three methods and compare
 
 ```bash
@@ -240,7 +243,9 @@ Controls the API Gatekeeper's per-service rate limiting and retry behavior.
 
 ## Cost & Resource Analysis
 
-Estimated energy cost per benchmark run at TDP (Thermal Design Power):
+Estimated energy cost per benchmark run at TDP (Thermal Design Power). See
+[`docs/COSTS.md`](docs/COSTS.md) for the full breakdown with real measured data
+and optimization recommendations.
 
 | Method | Model | Latency | RAM Peak | VRAM Peak | Energy (kWh) | Cost @ $0.10/kWh |
 |--------|-------|---------|----------|-----------|--------------|------------------|
@@ -405,7 +410,7 @@ uv run pytest tests/
 find src -name "*.py" | xargs wc -l | sort -rn | head -10
 ```
 
-Current status: **148 tests | 94.96% coverage | ruff 0 errors | all files ≤ 150 lines**
+Current status: **159 tests | 95.62% coverage | ruff 0 errors | all files ≤ 150 lines**
 
 ---
 

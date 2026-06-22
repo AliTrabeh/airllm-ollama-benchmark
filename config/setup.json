@@ -6,6 +6,6 @@
     "max_new_tokens": 20,
     "airllm_max_seq_len": 128,
     "device": "cuda",
-    "models_dir": "D:/ai_models",
+    "models_dir": "./models",
     "results_dir": "./results"
 }
