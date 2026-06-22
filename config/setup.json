@@ -1,7 +1,7 @@
 {
     "model_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
     "airllm_model_id": "mistralai/Mistral-7B-v0.1",
-    "ollama_model": "tinyllama",
+    "ollama_model": "llama3.2:3b",
     "ollama_url": "http://localhost:11434",
     "max_new_tokens": 20,
     "airllm_max_seq_len": 128,

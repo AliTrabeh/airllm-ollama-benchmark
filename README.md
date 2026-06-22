@@ -7,7 +7,7 @@ can run models that are too large for normal RAM/VRAM — at the cost of higher 
 
 | Method | Model | Goal |
 |--------|-------|------|
-| **Ollama** | tinyllama | Fast pipeline verification, latency baseline |
+| **Ollama** | llama3.2:3b | Fast pipeline verification, latency baseline |
 | **HuggingFace Baseline** | TinyLlama-1.1B-Chat | Standard GPU loading, VRAM baseline |
 | **AirLLM** | Mistral-7B-v0.1 | CPU layer-paging — runs 14 GB model on 8 GB VRAM GPU |
 
@@ -49,7 +49,7 @@ uv sync
 
 # Start Ollama in a separate terminal
 ollama serve
-ollama pull tinyllama
+ollama pull llama3.2:3b
 
 # Run the full benchmark (all three methods)
 uv run airllm-benchmark --method all --max-tokens 20
@@ -198,7 +198,7 @@ Copy `.env.example` to `.env` and fill in your values. Never commit `.env`.
 | `HF_TOKEN` | **Yes** | HuggingFace API token — get one at huggingface.co/settings/tokens |
 | `MODEL_ID` | No | Override HF baseline model (default: `TinyLlama/TinyLlama-1.1B-Chat-v1.0`) |
 | `AIRLLM_MODEL_ID` | No | Override AirLLM model (default: `mistralai/Mistral-7B-v0.1`) |
-| `OLLAMA_MODEL` | No | Override Ollama model name (default: `tinyllama`) |
+| `OLLAMA_MODEL` | No | Override Ollama model name (default: `llama3.2:3b`) |
 | `MAX_NEW_TOKENS` | No | Global token limit (default: `20` — keep small for AirLLM) |
 | `DEVICE` | No | `cuda` or `cpu` for HF baseline (default: `cuda`) |
 | `MODELS_DIR` | No | Local model cache directory (default: `./models`) |
@@ -212,7 +212,7 @@ Non-secret settings committed to the repository. All values overridable via env 
 {
     "model_id":          "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
     "airllm_model_id":   "mistralai/Mistral-7B-v0.1",
-    "ollama_model":      "tinyllama",
+    "ollama_model":      "llama3.2:3b",
     "ollama_url":        "http://localhost:11434",
     "max_new_tokens":    20,
     "airllm_max_seq_len": 128,
@@ -244,7 +244,7 @@ Estimated energy cost per benchmark run at TDP (Thermal Design Power):
 
 | Method | Model | Latency | RAM Peak | VRAM Peak | Energy (kWh) | Cost @ $0.10/kWh |
 |--------|-------|---------|----------|-----------|--------------|------------------|
-| Ollama | tinyllama | ~1 s | ~400 MB | ~1800 MB | ~0.000056 kWh @ 200W | ~$0.0000056 |
+| Ollama | llama3.2:3b | ~2 s | ~600 MB | ~2000 MB | ~0.000111 kWh @ 200W | ~$0.0000111 |
 | HF Baseline | TinyLlama-1.1B | ~3 s | ~2000 MB | ~2200 MB | ~0.000167 kWh @ 200W | ~$0.0000167 |
 | AirLLM | Mistral-7B | ~14 min | ~1800 MB | 0 MB (CPU only) | ~0.015 kWh @ 65W | ~$0.0015 |
 
