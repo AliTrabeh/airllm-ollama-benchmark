@@ -3,7 +3,7 @@
 **Group:** 08_storage
 **Type:** impl
 **Target file:** `src/airllm_benchmark/storage/report_generator.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

@@ -3,7 +3,7 @@
 **Group:** 12_docs
 **Type:** impl
 **Target file:** `LICENSE`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

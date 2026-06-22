@@ -3,7 +3,7 @@
 **Group:** 10_cli
 **Type:** test
 **Target file:** `tests/unit/test_main.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

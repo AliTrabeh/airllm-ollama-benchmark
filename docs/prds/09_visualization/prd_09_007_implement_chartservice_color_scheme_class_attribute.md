@@ -3,7 +3,7 @@
 **Group:** 09_visualization
 **Type:** impl
 **Target file:** `src/airllm_benchmark/visualization/chart_service.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

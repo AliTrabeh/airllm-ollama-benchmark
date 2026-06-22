@@ -3,7 +3,7 @@
 **Group:** 12_docs
 **Type:** impl
 **Target file:** `docs/MODEL_SELECTION.md`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

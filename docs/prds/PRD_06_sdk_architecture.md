@@ -4,7 +4,7 @@
 - software_submission_guidelines-V3 §4 (SDK architecture), §5 (API Gatekeeper)
 - software_submission_guidelines-V3 §2.4 (full project structure)
 
-**Status:** TODO
+**Status:** DONE
 
 ---
 

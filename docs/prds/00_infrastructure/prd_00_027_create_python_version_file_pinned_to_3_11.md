@@ -3,7 +3,7 @@
 **Group:** 00_infrastructure
 **Type:** impl
 **Target file:** `.python-version`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

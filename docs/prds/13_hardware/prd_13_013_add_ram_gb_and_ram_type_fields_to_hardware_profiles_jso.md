@@ -3,7 +3,7 @@
 **Group:** 13_hardware
 **Type:** impl
 **Target file:** `config/hardware_profiles.json`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

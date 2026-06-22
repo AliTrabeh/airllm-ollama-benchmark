@@ -3,7 +3,7 @@
 **Group:** 04_hf_baseline
 **Type:** impl
 **Target file:** `config/rate_limits.json`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

@@ -3,7 +3,7 @@
 **Group:** 03_ollama
 **Type:** test
 **Target file:** `tests/unit/test_services/test_ollama_service.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

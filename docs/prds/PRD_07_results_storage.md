@@ -5,7 +5,7 @@
 - software_submission_guidelines-V3 §9 (research & results), §11 (costs)
 - Detailed_Feedback_Report_252608 §Research&Analysis (KEEP-04), §Costs&Pricing (RISK-01)
 
-**Status:** TODO
+**Status:** DONE
 
 ---
 

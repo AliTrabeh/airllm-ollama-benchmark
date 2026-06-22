@@ -3,7 +3,7 @@
 **Group:** 01_shared
 **Type:** impl
 **Target file:** `src/airllm_benchmark/shared/gatekeeper.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

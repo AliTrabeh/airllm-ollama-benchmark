@@ -3,7 +3,7 @@
 **Group:** 11_quality
 **Type:** impl
 **Target file:** `tests/integration/`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

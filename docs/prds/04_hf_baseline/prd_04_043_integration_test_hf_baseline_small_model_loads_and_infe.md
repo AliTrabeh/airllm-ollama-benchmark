@@ -3,7 +3,7 @@
 **Group:** 04_hf_baseline
 **Type:** test
 **Target file:** `tests/integration/test_hf_integration.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

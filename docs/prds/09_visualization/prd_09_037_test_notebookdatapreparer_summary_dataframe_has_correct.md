@@ -3,7 +3,7 @@
 **Group:** 09_visualization
 **Type:** test
 **Target file:** `tests/unit/test_visualization/test_notebook_data.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

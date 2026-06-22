@@ -3,7 +3,7 @@
 **Group:** 02_models
 **Type:** impl
 **Target file:** `src/airllm_benchmark/models/benchmark_result.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

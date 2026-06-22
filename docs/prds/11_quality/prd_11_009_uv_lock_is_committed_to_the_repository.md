@@ -3,7 +3,7 @@
 **Group:** 11_quality
 **Type:** impl
 **Target file:** `uv.lock`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

@@ -5,7 +5,7 @@
 - Detailed_Feedback_Report_252608 §UI/UX (RISK-02), §Research&Analysis (KEEP-04)
 - L08-summary-Lora-AirLLM-and-HW §9.1 (step 5: measure and compare)
 
-**Status:** TODO
+**Status:** DONE
 
 ---
 

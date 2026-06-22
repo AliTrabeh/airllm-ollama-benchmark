@@ -3,7 +3,7 @@
 **Group:** 12_docs
 **Type:** impl
 **Target file:** `docs/PROMPTS.md`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

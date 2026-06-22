@@ -4,7 +4,7 @@
 - L08-summary-Lora-AirLLM-and-HW §8 (AirLLM: Running Large Models on CPU), §9.1 (step 4)
 - software_submission_guidelines-V3 §4 (SDK), §5 (Gatekeeper)
 
-**Status:** TODO
+**Status:** DONE
 
 ---
 

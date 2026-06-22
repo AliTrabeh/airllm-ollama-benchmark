@@ -3,7 +3,7 @@
 **Group:** 05_airllm
 **Type:** test
 **Target file:** `tests/unit/test_services/test_airllm_service.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

@@ -3,7 +3,7 @@
 **Group:** 03_ollama
 **Type:** impl
 **Target file:** `src/airllm_benchmark/services/ollama_service.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

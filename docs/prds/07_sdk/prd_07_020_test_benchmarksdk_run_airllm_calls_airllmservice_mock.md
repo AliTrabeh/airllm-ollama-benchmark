@@ -3,7 +3,7 @@
 **Group:** 07_sdk
 **Type:** test
 **Target file:** `tests/unit/test_sdk/test_sdk.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

@@ -3,7 +3,7 @@
 **Group:** 00_infrastructure
 **Type:** impl
 **Target file:** `.env.example`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

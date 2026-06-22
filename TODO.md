@@ -160,7 +160,7 @@ Implementation order follows dependency graph. Mark status as work progresses.
 |------|------|--------|
 | Complete README.md (all sections) | README.md | PARTIAL (441 lines drafted, needs screenshots/charts) |
 | Update PROMPTS.md with all AI prompts used | PROMPTS.md | TODO |
-| Update PRD statuses to DONE | docs/prds/*.md | TODO |
+| Update PRD statuses to DONE | docs/prds/*.md | DONE (570 files, Status field flipped; acceptance-criteria checkboxes not individually re-verified) |
 | Run FEEDBACK_RISK_CHECKLIST.md verification | — | TODO |
 | Verify .env not committed | — | DONE (gitignored, untracked) |
 | Verify uv.lock committed | — | DONE |

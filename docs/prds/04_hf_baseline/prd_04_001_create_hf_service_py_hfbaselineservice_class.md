@@ -3,7 +3,7 @@
 **Group:** 04_hf_baseline
 **Type:** impl
 **Target file:** `src/airllm_benchmark/services/hf_service.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

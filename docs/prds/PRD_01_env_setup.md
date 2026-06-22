@@ -4,7 +4,7 @@
 - software_submission_guidelines-V3 §8.4 (uv), §2.4 (project structure), §7 (config/security)
 - L08-summary-Lora-AirLLM-and-HW §9.1 (tips: use uv, avoid newest Python)
 
-**Status:** TODO
+**Status:** DONE
 
 ---
 

@@ -3,7 +3,7 @@
 **Group:** 06_metrics
 **Type:** impl
 **Target file:** `src/airllm_benchmark/metrics/cost_estimator.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

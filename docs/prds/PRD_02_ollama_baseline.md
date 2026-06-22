@@ -4,7 +4,7 @@
 - L08-summary-Lora-AirLLM-and-HW §6 (Ollama: local inference), §9.1 (step 2)
 - software_submission_guidelines-V3 §4 (SDK), §5 (Gatekeeper)
 
-**Status:** TODO
+**Status:** DONE
 
 ---
 

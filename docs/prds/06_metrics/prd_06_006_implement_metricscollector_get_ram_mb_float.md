@@ -3,7 +3,7 @@
 **Group:** 06_metrics
 **Type:** impl
 **Target file:** `src/airllm_benchmark/metrics/metrics_collector.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

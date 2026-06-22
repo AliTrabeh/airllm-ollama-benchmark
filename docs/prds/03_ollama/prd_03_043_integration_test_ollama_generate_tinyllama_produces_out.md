@@ -3,7 +3,7 @@
 **Group:** 03_ollama
 **Type:** test
 **Target file:** `tests/integration/test_ollama_integration.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

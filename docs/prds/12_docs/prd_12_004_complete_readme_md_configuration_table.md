@@ -3,7 +3,7 @@
 **Group:** 12_docs
 **Type:** impl
 **Target file:** `README.md`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

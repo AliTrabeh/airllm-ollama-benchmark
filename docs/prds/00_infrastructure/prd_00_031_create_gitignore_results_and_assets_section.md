@@ -3,7 +3,7 @@
 **Group:** 00_infrastructure
 **Type:** impl
 **Target file:** `.gitignore`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

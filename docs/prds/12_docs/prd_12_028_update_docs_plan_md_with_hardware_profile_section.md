@@ -3,7 +3,7 @@
 **Group:** 12_docs
 **Type:** impl
 **Target file:** `docs/PLAN.md`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

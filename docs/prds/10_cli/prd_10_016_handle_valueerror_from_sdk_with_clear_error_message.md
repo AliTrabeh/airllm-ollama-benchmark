@@ -3,7 +3,7 @@
 **Group:** 10_cli
 **Type:** impl
 **Target file:** `src/airllm_benchmark/main.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

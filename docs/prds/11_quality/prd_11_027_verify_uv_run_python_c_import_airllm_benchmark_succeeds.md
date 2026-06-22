@@ -3,7 +3,7 @@
 **Group:** 11_quality
 **Type:** test
 **Target file:** `src/airllm_benchmark/__init__.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

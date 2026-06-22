@@ -3,7 +3,7 @@
 **Group:** 02_models
 **Type:** test
 **Target file:** `tests/unit/test_models/test_comparison_report.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

@@ -3,7 +3,7 @@
 **Group:** 04_hf_baseline
 **Type:** test
 **Target file:** `tests/unit/test_services/test_hf_service.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

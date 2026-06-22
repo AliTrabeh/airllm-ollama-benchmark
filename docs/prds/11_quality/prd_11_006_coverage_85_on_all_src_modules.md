@@ -3,7 +3,7 @@
 **Group:** 11_quality
 **Type:** impl
 **Target file:** `pyproject.toml`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

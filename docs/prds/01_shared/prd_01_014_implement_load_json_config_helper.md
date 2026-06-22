@@ -3,7 +3,7 @@
 **Group:** 01_shared
 **Type:** impl
 **Target file:** `src/airllm_benchmark/shared/config.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

@@ -4,7 +4,7 @@
 - L08-summary-Lora-AirLLM-and-HW §4 (Model selection), §9.1 (steps 1 and 3)
 - software_submission_guidelines-V3 §4 (SDK), §7.4 (secrets/tokens)
 
-**Status:** TODO
+**Status:** DONE
 
 ---
 
