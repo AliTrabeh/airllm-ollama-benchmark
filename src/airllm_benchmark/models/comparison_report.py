@@ -73,6 +73,8 @@ class ComparisonReport:
             "fastest_method": self.fastest_method,
             "most_memory_efficient": self.most_memory_efficient,
             "recommendations": self.recommendations(),
+            "cost_breakdown": self.cost_breakdown(),
+            "summary_table": self.summary_table(),
         }
 
     def to_json(self) -> str:
