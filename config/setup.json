@@ -3,7 +3,7 @@
     "airllm_model_id": "mistralai/Mistral-7B-v0.1",
     "ollama_model": "tinyllama",
     "max_new_tokens": 20,
-    "device": "cpu",
+    "device": "cuda",
     "models_dir": "./models",
     "results_dir": "./results"
 }
