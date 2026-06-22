@@ -1,8 +1,8 @@
-"""AirLLMService — layer-paged CPU inference for models larger than available VRAM.
+"""AirLLMService — layer-paged inference for models larger than available VRAM.
 
 AirLLM memory-maps SafeTensors model files via mmap so only the layer currently
-being processed is resident in physical RAM.  This lets a 7-B model (~14 GB) run
-on a machine with far less RAM/VRAM — at the cost of high latency (I/O-bound).
+being processed is resident in physical RAM/VRAM.  This lets a 7-B model (~14 GB)
+run on a machine with far less RAM/VRAM — at the cost of high latency (I/O-bound).
 """
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ from airllm_benchmark.services.metrics_service import MetricsCollector
 from airllm_benchmark.shared.config import load_config
 
 
-def _cost_estimate(latency_s: float, tdp_w: float = 65.0) -> str:
-    """CPU-only TDP estimate (no GPU used in layer-paging mode)."""
+def _cost_estimate(latency_s: float, device: str = "cpu") -> str:
+    tdp_w = 200.0 if device == "cuda" else 65.0
     kwh = latency_s / 3600 * tdp_w / 1000
     return f"~{kwh:.5f} kWh @ {tdp_w:.0f}W TDP"
 
@@ -22,6 +22,7 @@ class AirLLMService:
 
     def __init__(self, config: dict | None = None) -> None:
         cfg = config if config is not None else load_config()
+        self._device: str = cfg.get("device", "cuda")
         self._cache_dir: str = cfg.get("models_dir", "./models")
         self._hf_token: str = cfg.get("hf_token", "")
         self._max_seq_len: int = int(cfg.get("airllm_max_seq_len", 128))
@@ -46,10 +47,13 @@ class AirLLMService:
             ) from exc
 
         token = self._hf_token or None
+        # AirLLM's KV-cache concat in its decode loop has a device inconsistency
+        # on CUDA (prefill works but generation mixes cpu/cuda tensors in torch.cat).
+        # CPU is the intended mode for layer-paging: the whole point is to run
+        # models that don't fit in VRAM.  fp32 avoids half-precision instability on CPU.
         tokenizer = AutoTokenizer.from_pretrained(
             model_id, cache_dir=self._cache_dir, token=token
         )
-        # device='cpu' required when torch has no CUDA build; float32 avoids fp16 instability on CPU
         model = AutoModel.from_pretrained(
             model_id,
             max_seq_len=self._max_seq_len,
@@ -66,11 +70,7 @@ class AirLLMService:
                 max_length=self._max_seq_len,
                 padding=False,
             )
-            # Layer paging happens inside generate() — one layer at a time, CPU-only
-            out = model.generate(
-                input_tokens["input_ids"],
-                max_new_tokens=max_tokens,
-            )
+            out = model.generate(input_tokens["input_ids"], max_new_tokens=max_tokens)
             output_text = tokenizer.decode(out[0].tolist(), skip_special_tokens=True)
 
         snap = mc.snapshot
@@ -88,5 +88,5 @@ class AirLLMService:
             vram_peak_mb=snap.vram_peak_mb,
             tokens_generated=tokens_generated,
             tokens_per_second=tps,
-            cost_estimate=_cost_estimate(snap.latency_s),
+            cost_estimate=_cost_estimate(snap.latency_s, "cpu"),
         )
