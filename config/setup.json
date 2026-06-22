@@ -4,6 +4,7 @@
     "ollama_model": "tinyllama",
     "ollama_url": "http://localhost:11434",
     "max_new_tokens": 20,
+    "airllm_max_seq_len": 128,
     "device": "cuda",
     "models_dir": "./models",
     "results_dir": "./results"

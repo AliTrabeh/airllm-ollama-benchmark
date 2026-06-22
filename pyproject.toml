@@ -25,6 +25,11 @@ dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
 ]
+ml = [
+    "airllm>=0.1.4",
+    "transformers>=4.40.0",
+    "torch>=2.1.0",
+]
 
 [tool.ruff]
 line-length = 120

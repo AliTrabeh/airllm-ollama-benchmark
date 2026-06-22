@@ -43,6 +43,9 @@ def load_config() -> dict:
         "models_dir": os.getenv("MODELS_DIR") or app.get("models_dir", DEFAULT_MODELS_DIR),
         "results_dir": os.getenv("RESULTS_DIR") or app.get("results_dir", DEFAULT_RESULTS_DIR),
         "ollama_url": os.getenv("OLLAMA_URL") or app.get("ollama_url", OLLAMA_BASE_URL),
+        "airllm_max_seq_len": int(
+            os.getenv("AIRLLM_MAX_SEQ_LEN") or app.get("airllm_max_seq_len", 128)
+        ),
     }
 
 
