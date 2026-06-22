@@ -1,11 +1,11 @@
 {
-    "model_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+    "model_id": "microsoft/Phi-3-mini-4k-instruct",
     "airllm_model_id": "mistralai/Mistral-7B-v0.1",
     "ollama_model": "llama3.2:3b",
     "ollama_url": "http://localhost:11434",
     "max_new_tokens": 20,
     "airllm_max_seq_len": 128,
     "device": "cuda",
-    "models_dir": "./models",
+    "models_dir": "D:/ai_models",
     "results_dir": "./results"
 }
