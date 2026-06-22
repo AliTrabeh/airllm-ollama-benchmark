@@ -57,12 +57,12 @@ class HFBaselineService:
 
         with MetricsCollector() as mc:
             try:
-                dtype = torch.float16 if device == "cuda" else torch.float32
+                torch_dtype = torch.float16 if device == "cuda" else torch.float32
                 model = AutoModelForCausalLM.from_pretrained(
                     model_id,
                     cache_dir=self._cache_dir,
                     token=token,
-                    dtype=dtype,
+                    torch_dtype=torch_dtype,
                     low_cpu_mem_usage=True,
                 )
                 model = model.to(device)  # OOM happens here for large models on GPU
