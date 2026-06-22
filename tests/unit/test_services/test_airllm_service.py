@@ -51,7 +51,9 @@ def _build_mocks(fail_on_generate: bool = False) -> tuple:
 @pytest.fixture
 def mocks():
     al, tf, model, tok = _build_mocks()
-    with patch.dict(sys.modules, {"airllm": al, "transformers": tf}):
+    torch_m = MagicMock()
+    torch_m.cuda.is_available.return_value = False
+    with patch.dict(sys.modules, {"airllm": al, "transformers": tf, "torch": torch_m}):
         yield al, tf, model, tok
 
 
@@ -127,8 +129,10 @@ def test_generate_called_without_cuda(svc, mocks) -> None:
 def test_file_not_found_returns_error_result() -> None:
     al, tf, model, _ = _build_mocks()
     al.AutoModel.from_pretrained.side_effect = FileNotFoundError("model dir missing")
+    torch_m = MagicMock()
+    torch_m.cuda.is_available.return_value = False
     svc = AirLLMService(config=_CFG)
-    with patch.dict(sys.modules, {"airllm": al, "transformers": tf}):
+    with patch.dict(sys.modules, {"airllm": al, "transformers": tf, "torch": torch_m}):
         result = svc.run("Hello", _MODEL, 20)
     assert not result.is_success
     assert "not found" in result.error.lower()

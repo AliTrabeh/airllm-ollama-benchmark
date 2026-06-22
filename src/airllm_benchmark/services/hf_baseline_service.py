@@ -41,6 +41,10 @@ class HFBaselineService:
             ) from exc
 
         token = self._hf_token or None
+        device = self._device
+        if device == "cuda" and not torch.cuda.is_available():
+            device = "cpu"
+
         tokenizer = AutoTokenizer.from_pretrained(
             model_id, cache_dir=self._cache_dir, token=token
         )
@@ -53,16 +57,24 @@ class HFBaselineService:
 
         with MetricsCollector() as mc:
             try:
+                dtype = torch.float16 if device == "cuda" else torch.float32
                 model = AutoModelForCausalLM.from_pretrained(
                     model_id,
                     cache_dir=self._cache_dir,
                     token=token,
-                    torch_dtype=torch.float16,
+                    dtype=dtype,
                     low_cpu_mem_usage=True,
                 )
-                model = model.to(self._device)  # OOM happens here for large models
-                inputs = tokenizer(prompt, return_tensors="pt")
-                inputs = {k: v.to(self._device) for k, v in inputs.items()}
+                model = model.to(device)  # OOM happens here for large models on GPU
+                if hasattr(tokenizer, "apply_chat_template") and tokenizer.chat_template:
+                    formatted = tokenizer.apply_chat_template(
+                        [{"role": "user", "content": prompt}],
+                        tokenize=False, add_generation_prompt=True,
+                    )
+                    inputs = tokenizer(formatted, return_tensors="pt")
+                else:
+                    inputs = tokenizer(prompt, return_tensors="pt")
+                inputs = {k: v.to(device) for k, v in inputs.items()}
                 out = model.generate(**inputs, max_new_tokens=max_tokens)
                 prompt_len = inputs["input_ids"].shape[1]
                 tokens_generated = out.shape[1] - prompt_len
