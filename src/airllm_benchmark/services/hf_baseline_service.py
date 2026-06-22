@@ -11,7 +11,7 @@ import gc
 
 from airllm_benchmark.models.benchmark_result import BenchmarkResult
 from airllm_benchmark.services.metrics_service import MetricsCollector
-from airllm_benchmark.shared.config import load_config
+from airllm_benchmark.shared.config import hf_model_dir_size_gb, load_config
 
 
 def _cost_estimate(latency_s: float, tdp_w: float = 200.0) -> str:
@@ -92,6 +92,7 @@ class HFBaselineService:
 
         snap = mc.snapshot
         tps = tokens_generated / snap.latency_s if snap.latency_s > 0 and tokens_generated > 0 else 0.0
+        disk_gb = hf_model_dir_size_gb(self._cache_dir, model_id)
 
         if error_msg:
             return BenchmarkResult(
@@ -103,6 +104,7 @@ class HFBaselineService:
                 vram_peak_mb=snap.vram_peak_mb,
                 tokens_generated=0,
                 tokens_per_second=0.0,
+                disk_gb=disk_gb,
                 error=error_msg,
             )
 
@@ -116,5 +118,6 @@ class HFBaselineService:
             vram_peak_mb=snap.vram_peak_mb,
             tokens_generated=tokens_generated,
             tokens_per_second=tps,
+            disk_gb=disk_gb,
             cost_estimate=_cost_estimate(snap.latency_s),
         )

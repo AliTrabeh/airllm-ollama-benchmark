@@ -130,3 +130,25 @@ def test_eval_duration_zero_falls_back_to_wall_clock(svc) -> None:
          patch("requests.post", return_value=_post_mock(resp_no_eval)):
         result = svc.run("Hello", "tinyllama", 20)
     assert result.tokens_per_second > 0
+
+
+# ---------------------------------------------------------------------------
+# Disk size lookup
+# ---------------------------------------------------------------------------
+
+def test_disk_gb_populated_from_tags_endpoint(svc) -> None:
+    tags_resp = _get_ok()
+    tags_resp.json.return_value = {
+        "models": [{"name": "tinyllama", "size": 2 * 1024**3}]
+    }
+    with patch("requests.get", return_value=tags_resp), \
+         patch("requests.post", return_value=_post_mock(_GOOD_RESP)):
+        result = svc.run("Hello", "tinyllama", 20)
+    assert result.disk_gb == pytest.approx(2.0)
+
+
+def test_disk_gb_zero_when_tags_endpoint_fails(svc) -> None:
+    with patch("requests.get", side_effect=[_get_ok(), requests.RequestException("boom")]), \
+         patch("requests.post", return_value=_post_mock(_GOOD_RESP)):
+        result = svc.run("Hello", "tinyllama", 20)
+    assert result.disk_gb == 0.0

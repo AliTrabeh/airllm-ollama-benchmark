@@ -66,3 +66,12 @@ def get_models_dir(config: dict) -> Path:
 
 def get_results_dir(config: dict) -> Path:
     return Path(config.get("results_dir", DEFAULT_RESULTS_DIR))
+
+
+def hf_model_dir_size_gb(cache_dir: str, model_id: str) -> float:
+    """Size on disk of a HuggingFace-cache model snapshot, in GB (0.0 if not found)."""
+    snapshot_dir = Path(cache_dir) / f"models--{model_id.replace('/', '--')}"
+    if not snapshot_dir.exists():
+        return 0.0
+    total_bytes = sum(f.stat().st_size for f in snapshot_dir.rglob("*") if f.is_file())
+    return total_bytes / (1024**3)

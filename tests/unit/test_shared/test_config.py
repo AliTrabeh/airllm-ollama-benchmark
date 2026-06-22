@@ -11,6 +11,7 @@ import pytest
 from airllm_benchmark.shared.config import (
     get_models_dir,
     get_results_dir,
+    hf_model_dir_size_gb,
     load_config,
     require_hf_token,
 )
@@ -70,3 +71,16 @@ def test_get_models_dir_returns_path() -> None:
 def test_get_results_dir_returns_path() -> None:
     cfg = {"results_dir": "./custom_results"}
     assert get_results_dir(cfg) == Path("./custom_results")
+
+
+def test_hf_model_dir_size_gb_missing_dir_returns_zero(tmp_path: Path) -> None:
+    assert hf_model_dir_size_gb(str(tmp_path), "org/missing-model") == 0.0
+
+
+def test_hf_model_dir_size_gb_sums_file_sizes(tmp_path: Path) -> None:
+    snapshot = tmp_path / "models--org--model" / "snapshots" / "abc"
+    snapshot.mkdir(parents=True)
+    (snapshot / "model.safetensors").write_bytes(b"x" * 1024)
+    (snapshot / "config.json").write_bytes(b"{}")
+    size_gb = hf_model_dir_size_gb(str(tmp_path), "org/model")
+    assert size_gb == pytest.approx(1026 / (1024**3))

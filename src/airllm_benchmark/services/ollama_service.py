@@ -43,6 +43,16 @@ class OllamaService:
                 f"Ollama is not running at {self._base_url}. Start it with: ollama serve"
             ) from exc
 
+    def _model_size_gb(self, model: str) -> float:
+        try:
+            resp = requests.get(f"{self._base_url}{OLLAMA_HEALTH_EP}", timeout=5)
+            for m in resp.json().get("models", []):
+                if m.get("name") == model:
+                    return m.get("size", 0) / (1024**3)
+        except (requests.RequestException, ValueError):
+            pass
+        return 0.0
+
     def run(self, prompt: str, model: str, max_tokens: int) -> BenchmarkResult:
         self._health_check()
 
@@ -95,5 +105,6 @@ class OllamaService:
             vram_peak_mb=snap.vram_peak_mb,
             tokens_generated=tokens_generated,
             tokens_per_second=tps,
+            disk_gb=self._model_size_gb(model),
             cost_estimate=_cost_estimate(latency_s),
         )
