@@ -158,10 +158,10 @@ Implementation order follows dependency graph. Mark status as work progresses.
 
 | Task | File | Status |
 |------|------|--------|
-| Complete README.md (all sections) | README.md | PARTIAL (441 lines drafted, needs screenshots/charts) |
+| Complete README.md (all sections) | README.md | DONE (terminal sample + COSTS.md linked, stale test-count stat fixed) |
 | Update PROMPTS.md with all AI prompts used | PROMPTS.md | DONE (Session 2 reconstructed from git history; Session 3 recorded verbatim from this conversation) |
 | Update PRD statuses to DONE | docs/prds/*.md | DONE (570 files, Status field flipped; acceptance-criteria checkboxes not individually re-verified) |
 | Run FEEDBACK_RISK_CHECKLIST.md verification | — | DONE (caught + fixed a real RISK-03 hardcoded-path violation; created docs/COSTS.md and assets/terminal_output_sample.txt; fresh-clone smoke test still open) |
 | Verify .env not committed | — | DONE (gitignored, untracked) |
 | Verify uv.lock committed | — | DONE |
-| Final git commit with clean history | — | TODO |
+| Final git commit with clean history | — | DONE (working tree clean, all changes landed in scoped commits) |
