@@ -15,6 +15,7 @@ from airllm_benchmark.shared.constants import (
     DEFAULT_MAX_NEW_TOKENS,
     DEFAULT_MODELS_DIR,
     DEFAULT_RESULTS_DIR,
+    OLLAMA_BASE_URL,
 )
 
 _CONFIG_PATH = Path(__file__).resolve().parent.parent.parent.parent / "config" / "setup.json"
@@ -41,6 +42,7 @@ def load_config() -> dict:
         "device": os.getenv("DEVICE") or app.get("device", DEFAULT_DEVICE),
         "models_dir": os.getenv("MODELS_DIR") or app.get("models_dir", DEFAULT_MODELS_DIR),
         "results_dir": os.getenv("RESULTS_DIR") or app.get("results_dir", DEFAULT_RESULTS_DIR),
+        "ollama_url": os.getenv("OLLAMA_URL") or app.get("ollama_url", OLLAMA_BASE_URL),
     }
 
 
