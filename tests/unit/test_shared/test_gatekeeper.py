@@ -5,7 +5,6 @@ import pytest
 
 from airllm_benchmark.shared.gatekeeper import ApiGatekeeper
 
-
 _FAST = {"requests_per_minute": 60, "max_retries": 3, "retry_delay_s": 0.0}
 _NO_RETRY = {"requests_per_minute": 60, "max_retries": 0, "retry_delay_s": 0.0}
 

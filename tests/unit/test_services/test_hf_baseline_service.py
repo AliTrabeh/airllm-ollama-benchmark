@@ -40,9 +40,9 @@ def _build_mocks(oom_on_to: bool = False, oom_on_generate: bool = False) -> tupl
     model.generate.side_effect = RuntimeError("CUDA out of memory.") if oom_on_generate else None
     model.generate.return_value = out
 
-    AutoTokenizer = MagicMock()
+    AutoTokenizer = MagicMock()  # noqa: N806
     AutoTokenizer.from_pretrained.return_value = tokenizer
-    AutoModelForCausalLM = MagicMock()
+    AutoModelForCausalLM = MagicMock()  # noqa: N806
     AutoModelForCausalLM.from_pretrained.return_value = model
 
     tf = MagicMock()

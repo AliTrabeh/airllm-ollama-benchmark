@@ -9,7 +9,6 @@ import pytest
 from airllm_benchmark.models.benchmark_result import BenchmarkResult
 from airllm_benchmark.services.metrics_service import MetricsCollector, MetricsSnapshot
 
-
 # ---------------------------------------------------------------------------
 # Snapshot shape
 # ---------------------------------------------------------------------------
@@ -84,18 +83,16 @@ def test_ram_peak_captures_allocation() -> None:
 def test_no_cuda_vram_is_zero() -> None:
     with (
         patch("airllm_benchmark.services.metrics_service._cuda_allocated_mb", return_value=0.0),
-        patch("airllm_benchmark.services.metrics_service._cuda_peak_mb", return_value=0.0),
+        patch("airllm_benchmark.services.metrics_service._cuda_peak_mb", return_value=0.0),MetricsCollector() as mc
     ):
-        with MetricsCollector() as mc:
-            pass
+        pass
     assert mc.snapshot.vram_start_mb == 0.0
     assert mc.snapshot.vram_peak_mb == 0.0
 
 
 def test_no_cuda_does_not_raise() -> None:
-    with patch("airllm_benchmark.services.metrics_service._cuda_reset_peak"):
-        with MetricsCollector() as mc:
-            pass
+    with patch("airllm_benchmark.services.metrics_service._cuda_reset_peak"), MetricsCollector() as mc:
+        pass
     assert mc.snapshot is not None
 
 
@@ -104,9 +101,8 @@ def test_no_cuda_does_not_raise() -> None:
 # ---------------------------------------------------------------------------
 
 def test_exception_not_suppressed() -> None:
-    with pytest.raises(ValueError, match="test error"):
-        with MetricsCollector():
-            raise ValueError("test error")
+    with pytest.raises(ValueError, match="test error"), MetricsCollector():
+        raise ValueError("test error")
 
 
 def test_snapshot_set_even_on_exception() -> None:

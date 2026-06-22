@@ -92,23 +92,22 @@ def test_cost_estimate_populated(svc) -> None:
 
 def test_ollama_not_running_raises_connection_error() -> None:
     svc = OllamaService(config=_CFG)
-    with patch("requests.get", side_effect=requests.ConnectionError("refused")):
-        with pytest.raises(OllamaConnectionError, match="ollama serve"):
-            svc.run("Hello", "tinyllama", 20)
+    with patch("requests.get", side_effect=requests.ConnectionError("refused")), \
+         pytest.raises(OllamaConnectionError, match="ollama serve"):
+        svc.run("Hello", "tinyllama", 20)
 
 
 def test_model_not_found_raises_with_pull_hint(svc) -> None:
     with patch("requests.get", return_value=_get_ok()), \
-         patch("requests.post", return_value=_post_mock({}, status=404)):
-        with pytest.raises(OllamaModelNotFoundError, match="ollama pull"):
-            svc.run("Hello", "missing-model", 20)
+         patch("requests.post", return_value=_post_mock({}, status=404)), \
+         pytest.raises(OllamaModelNotFoundError, match="ollama pull"):
+        svc.run("Hello", "missing-model", 20)
 
 
 def test_http_error_propagates(svc) -> None:
     with patch("requests.get", return_value=_get_ok()), \
-         patch("requests.post", return_value=_post_mock({}, status=500)):
-        with pytest.raises(requests.HTTPError):
-            svc.run("Hello", "tinyllama", 20)
+         patch("requests.post", return_value=_post_mock({}, status=500)), pytest.raises(requests.HTTPError):
+        svc.run("Hello", "tinyllama", 20)
 
 
 # ---------------------------------------------------------------------------

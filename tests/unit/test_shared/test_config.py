@@ -19,12 +19,12 @@ from airllm_benchmark.shared.constants import DEFAULT_DEVICE, DEFAULT_MAX_NEW_TO
 
 def test_load_config_defaults(tmp_path: Path) -> None:
     nonexistent = tmp_path / "no_setup.json"
-    with patch("airllm_benchmark.shared.config._CONFIG_PATH", nonexistent):
-        with patch.dict(os.environ, {"HF_TOKEN": "", "MODEL_ID": "", "DEVICE": "",
-                                      "MAX_NEW_TOKENS": str(DEFAULT_MAX_NEW_TOKENS),
-                                      "AIRLLM_MODEL_ID": "", "OLLAMA_MODEL": "",
-                                      "MODELS_DIR": "", "RESULTS_DIR": ""}):
-            config = load_config()
+    with patch("airllm_benchmark.shared.config._CONFIG_PATH", nonexistent), \
+         patch.dict(os.environ, {"HF_TOKEN": "", "MODEL_ID": "", "DEVICE": "",
+                                  "MAX_NEW_TOKENS": str(DEFAULT_MAX_NEW_TOKENS),
+                                  "AIRLLM_MODEL_ID": "", "OLLAMA_MODEL": "",
+                                  "MODELS_DIR": "", "RESULTS_DIR": ""}):
+        config = load_config()
     assert config["device"] == DEFAULT_DEVICE
     assert config["max_new_tokens"] == DEFAULT_MAX_NEW_TOKENS
 
@@ -32,9 +32,9 @@ def test_load_config_defaults(tmp_path: Path) -> None:
 def test_load_config_reads_json(tmp_path: Path) -> None:
     setup = tmp_path / "setup.json"
     setup.write_text(json.dumps({"model_id": "json-model", "device": "cuda"}), encoding="utf-8")
-    with patch("airllm_benchmark.shared.config._CONFIG_PATH", setup):
-        with patch.dict(os.environ, {"MODEL_ID": "", "DEVICE": ""}):
-            config = load_config()
+    with patch("airllm_benchmark.shared.config._CONFIG_PATH", setup), \
+         patch.dict(os.environ, {"MODEL_ID": "", "DEVICE": ""}):
+        config = load_config()
     assert config["model_id"] == "json-model"
     assert config["device"] == "cuda"
 
@@ -42,9 +42,9 @@ def test_load_config_reads_json(tmp_path: Path) -> None:
 def test_env_overrides_json(tmp_path: Path) -> None:
     setup = tmp_path / "setup.json"
     setup.write_text(json.dumps({"model_id": "json-model"}), encoding="utf-8")
-    with patch("airllm_benchmark.shared.config._CONFIG_PATH", setup):
-        with patch.dict(os.environ, {"MODEL_ID": "env-model"}):
-            config = load_config()
+    with patch("airllm_benchmark.shared.config._CONFIG_PATH", setup), \
+         patch.dict(os.environ, {"MODEL_ID": "env-model"}):
+        config = load_config()
     assert config["model_id"] == "env-model"
 
 

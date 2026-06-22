@@ -69,7 +69,7 @@ def test_run_airllm_calls_service(passthrough_gk, mock_airllm) -> None:
     assert result.method == "airllm"
 
 
-def test_run_all_returns_report(passthrough_gk, mock_ollama, mock_hf, mock_airllm) -> None:
+def test_run_all(passthrough_gk, mock_ollama, mock_hf, mock_airllm) -> None:
     sdk = BenchmarkSDK(
         gatekeeper=passthrough_gk,
         ollama_service=mock_ollama,
@@ -79,16 +79,6 @@ def test_run_all_returns_report(passthrough_gk, mock_ollama, mock_hf, mock_airll
     report = sdk.run_all("hello", 20)
     assert isinstance(report, ComparisonReport)
     assert len(report.results) == 3
-
-
-def test_run_all_calls_all_three_services(passthrough_gk, mock_ollama, mock_hf, mock_airllm) -> None:
-    sdk = BenchmarkSDK(
-        gatekeeper=passthrough_gk,
-        ollama_service=mock_ollama,
-        hf_service=mock_hf,
-        airllm_service=mock_airllm,
-    )
-    sdk.run_all("hello", 20)
     mock_ollama.run.assert_called_once()
     mock_hf.run.assert_called_once()
     mock_airllm.run.assert_called_once()
@@ -144,18 +134,9 @@ def test_run_all_captures_service_error_as_failed_result(
 
 
 def test_run_all_uses_config_model_ids(passthrough_gk, mock_ollama, mock_hf, mock_airllm) -> None:
-    cfg = {
-        "ollama_model": "custom-ollama",
-        "model_id": "custom-hf",
-        "airllm_model_id": "custom-airllm",
-    }
-    sdk = BenchmarkSDK(
-        config=cfg,
-        gatekeeper=passthrough_gk,
-        ollama_service=mock_ollama,
-        hf_service=mock_hf,
-        airllm_service=mock_airllm,
-    )
+    cfg = {"ollama_model": "custom-ollama", "model_id": "custom-hf", "airllm_model_id": "custom-airllm"}
+    sdk = BenchmarkSDK(config=cfg, gatekeeper=passthrough_gk,
+                       ollama_service=mock_ollama, hf_service=mock_hf, airllm_service=mock_airllm)
     sdk.run_all("hello", 20)
     mock_ollama.run.assert_called_once_with("hello", "custom-ollama", 20)
     mock_hf.run.assert_called_once_with("hello", "custom-hf", 20)

@@ -28,7 +28,7 @@ def _build_mocks(fail_on_generate: bool = False) -> tuple:
     else:
         model.generate.return_value = out
 
-    AutoModel = MagicMock()
+    AutoModel = MagicMock()  # noqa: N806
     AutoModel.from_pretrained.return_value = model
     airllm_mock = MagicMock()
     airllm_mock.AutoModel = AutoModel
@@ -40,7 +40,7 @@ def _build_mocks(fail_on_generate: bool = False) -> tuple:
     tokenizer.return_value = {"input_ids": input_ids}
     tokenizer.decode.return_value = "AirLLM generated text."
 
-    AutoTokenizer = MagicMock()
+    AutoTokenizer = MagicMock()  # noqa: N806
     AutoTokenizer.from_pretrained.return_value = tokenizer
     tf_mock = MagicMock()
     tf_mock.AutoTokenizer = AutoTokenizer
@@ -135,6 +135,5 @@ def test_file_not_found_returns_error_result() -> None:
 
 
 def test_missing_library_raises_import_error(svc) -> None:
-    with patch.dict(sys.modules, {"airllm": None, "transformers": None}):
-        with pytest.raises((ImportError, TypeError)):
-            svc.run("Hello", _MODEL, 20)
+    with patch.dict(sys.modules, {"airllm": None, "transformers": None}), pytest.raises((ImportError, TypeError)):
+        svc.run("Hello", _MODEL, 20)
