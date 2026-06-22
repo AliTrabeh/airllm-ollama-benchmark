@@ -34,8 +34,8 @@ how those costs behave as usage scales."
 
 **Verified 2026-06-22:** `docs/COSTS.md` created with real measured data from `results/*.json`,
 comparison table, interpretation, and 4 optimization recommendations. Linked from README.
-Outstanding: `disk_gb` is a stub (always 0) — not a blocker for this risk, but worth fixing
-in a future pass.
+**Update 2026-06-23:** `disk_gb` (previously a 0.0 stub) now measures real on-disk model
+size for all three methods.
 
 ---
 
@@ -84,9 +84,10 @@ who has never seen your configuration before."
 - [x] `config/setup.json` with all non-secret settings
 - [x] README explains every environment variable
 - [x] README explains every config file
-- [ ] Test that a fresh clone with only `.env.example` renamed to `.env` works — **not yet
-      tested**; requires a clean clone + `uv sync` + smoke run, deliberately left for a
-      separate verification pass rather than assumed
+- [x] Test that a fresh clone with only `.env.example` renamed to `.env` works — **verified
+      2026-06-23**: cloned to a clean temp directory, copied `.env.example` → `.env` with no
+      edits, ran `uv sync` (fresh install, no cached venv), `uv run pytest` (163 passed,
+      96.58% coverage), and `uv run airllm-benchmark --method ollama` end-to-end successfully
 - [x] No hardcoded paths or machine-specific values — **fixed during this review**: a
       prior session change had committed `models_dir: "D:/ai_models"` directly into
       `config/setup.json` (machine-specific). Reverted to the portable default
@@ -214,6 +215,7 @@ Run through this list before submitting:
       (`notebooks/results_analysis.ipynb`, executed in place, plus `docs/COSTS.md`)
 - [x] KEEP-05: Git history shows clean, meaningful commits
 
-**Not yet verified (deliberately left open, not assumed):**
-- RISK-03 fresh-clone smoke test (clone → `.env.example` → `.env` → `uv sync` → run)
-- `disk_gb` field is a stub (always 0.0) — cosmetic gap in RISK-01's resource measurements
+**All items now verified.** Both previously-open items were closed in a follow-up pass
+(2026-06-23): the fresh-clone smoke test passed end-to-end, and `disk_gb` now measures real
+on-disk model size for all three methods (HF-cache snapshot size for hf_baseline/airllm,
+Ollama's `/api/tags` size field for ollama).
