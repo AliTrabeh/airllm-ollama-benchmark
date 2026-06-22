@@ -78,12 +78,12 @@ def main(argv: list[str] | None = None) -> int:
                 results_svc.save_result(r)
             path = results_svc.save_comparison(report)
             print(report.to_markdown())
-            print(f"\nSaved → {path}")
+            print(f"\nSaved -> {path}")
         else:
             result = _run_single(sdk, config, args.method, args.prompt, args.max_tokens)
             path = results_svc.save_result(result)
             _print_result(result, verbose=args.verbose)
-            print(f"\nSaved → {path}")
+            print(f"\nSaved -> {path}")
     except (ValueError, RuntimeError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1

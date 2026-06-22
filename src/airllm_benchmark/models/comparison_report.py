@@ -32,7 +32,7 @@ class ComparisonReport:
         sep    = "|--------|-------------|----------|-----------|----------|------|"
         rows = [header, sep]
         for r in self.results:
-            note = " ❌" if not r.is_success else ""
+            note = " FAILED" if not r.is_success else ""
             rows.append(
                 f"| {r.method} | {r.latency_s:.2f} | {r.ram_peak_mb:.1f} |"
                 f" {r.vram_peak_mb:.1f} | {r.tokens_per_second:.2f} | {r.cost_estimate}{note} |"
