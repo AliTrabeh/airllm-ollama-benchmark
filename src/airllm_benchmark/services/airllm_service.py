@@ -37,6 +37,7 @@ class AirLLMService:
 
     def _run(self, prompt: str, model_id: str, max_tokens: int) -> BenchmarkResult:
         try:
+            import torch  # noqa: PLC0415
             from airllm import AutoModel  # noqa: PLC0415
             from transformers import AutoTokenizer  # noqa: PLC0415
         except ImportError as exc:
@@ -48,8 +49,13 @@ class AirLLMService:
         tokenizer = AutoTokenizer.from_pretrained(
             model_id, cache_dir=self._cache_dir, token=token
         )
-        # from_pretrained only sets up the mmap loader — weights are not read yet
-        model = AutoModel.from_pretrained(model_id, max_seq_len=self._max_seq_len)
+        # device='cpu' required when torch has no CUDA build; float32 avoids fp16 instability on CPU
+        model = AutoModel.from_pretrained(
+            model_id,
+            max_seq_len=self._max_seq_len,
+            device="cpu",
+            dtype=torch.float32,
+        )
 
         with MetricsCollector() as mc:
             input_tokens = tokenizer(
