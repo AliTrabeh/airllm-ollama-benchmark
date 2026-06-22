@@ -92,3 +92,4 @@ logs/
 # Temporary
 *.tmp
 *.temp
+*.err
