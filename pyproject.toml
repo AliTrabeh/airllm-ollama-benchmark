@@ -26,6 +26,9 @@ dev = [
     "ruff>=0.8.0",
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
+    "jupyter>=1.1.1",
+    "nbconvert>=7.17.1",
+    "ipykernel>=7.3.0",
 ]
 ml = [
     "airllm>=0.1.4",

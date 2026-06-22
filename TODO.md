@@ -125,32 +125,32 @@ Implementation order follows dependency graph. Mark status as work progresses.
 
 ---
 
-## Phase 8: PRD-08 — Visualization (PARTIAL — code done, chart exports pending)
+## Phase 8: PRD-08 — Visualization (DONE)
 
 | Task | File | Status |
 |------|------|--------|
 | Create src/airllm_benchmark/visualization/chart_service.py | chart_service.py | DONE |
 | Create src/airllm_benchmark/visualization/notebook_data.py | notebook_data.py | DONE |
 | Create notebooks/results_analysis.ipynb | results_analysis.ipynb | DONE |
-| Generate Chart 1: Latency comparison | assets/chart_latency.png | TODO |
-| Generate Chart 2: Memory comparison | assets/chart_memory.png | TODO |
-| Generate Chart 3: Throughput comparison | assets/chart_throughput.png | TODO |
-| Generate Chart 4: Trade-off scatter | assets/chart_tradeoff.png | TODO |
-| Write interpretation sections in notebook | results_analysis.ipynb | TODO |
-| Add screenshots to README | README.md | TODO |
+| Generate Chart 1: Latency comparison | assets/latency_bar.png | DONE |
+| Generate Chart 2: Memory comparison | assets/memory_grouped_bar.png | DONE |
+| Generate Chart 3: Throughput comparison | assets/throughput_bar.png | DONE |
+| Generate Chart 4: Trade-off scatter | assets/trade_off_scatter.png | DONE |
+| Write interpretation sections in notebook | results_analysis.ipynb | DONE (data-driven conclusions cell, executed in place) |
+| Add screenshots to README | README.md | DONE (assets/*.png is git-ignored by design; README documents filenames + regen command instead of embedding) |
 
 ---
 
-## Phase 9: PRD-09 — Testing & Quality (PARTIAL — suite passing, coverage/lint re-verification pending)
+## Phase 9: PRD-09 — Testing & Quality (DONE)
 
 | Task | File | Status |
 |------|------|--------|
 | Write integration test | tests/integration/test_full_pipeline.py | DONE |
-| Run full test suite: uv run pytest --cov=src | — | DONE (159 tests pass) |
-| Fix any coverage gaps to reach ≥ 85% | — | TODO (re-verify after recent GPU changes) |
-| Run ruff: uv run ruff check src/ | — | TODO (re-verify after recent GPU changes) |
-| Fix any lint errors | — | TODO |
-| Verify all files ≤ 150 lines | — | TODO |
+| Run full test suite: uv run pytest --cov=src | — | DONE (159 tests pass, re-verified post-GPU changes) |
+| Fix any coverage gaps to reach ≥ 85% | — | DONE (95.62% total coverage) |
+| Run ruff: uv run ruff check src/ | — | DONE (re-verified post-GPU changes) |
+| Fix any lint errors | — | DONE (0 errors) |
+| Verify all files ≤ 150 lines | — | DONE (max 120 lines) |
 
 ---
 
