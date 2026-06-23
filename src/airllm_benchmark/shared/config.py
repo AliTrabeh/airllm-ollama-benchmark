@@ -28,9 +28,18 @@ def _load_json_config() -> dict:
 
 
 def load_config() -> dict:
-    """Return merged config: setup.json defaults + env overrides."""
+    """Return merged config: setup.json defaults + env overrides.
+
+    Also sets HUGGINGFACE_HUB_CACHE from models_dir if not already set. This must
+    happen before any transformers/huggingface_hub import (those resolve the cache
+    path into a module-level constant at first import) — some loaders, like
+    airllm's internal snapshot_download, never accept an explicit cache_dir
+    argument and rely entirely on this env var.
+    """
     load_dotenv()
     app = _load_json_config()
+    models_dir = os.getenv("MODELS_DIR") or app.get("models_dir", DEFAULT_MODELS_DIR)
+    os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(Path(models_dir).resolve()))
     return {
         "hf_token": os.getenv("HF_TOKEN", ""),
         "model_id": os.getenv("MODEL_ID") or app.get("model_id", ""),
@@ -40,7 +49,7 @@ def load_config() -> dict:
             os.getenv("MAX_NEW_TOKENS") or app.get("max_new_tokens", DEFAULT_MAX_NEW_TOKENS)
         ),
         "device": os.getenv("DEVICE") or app.get("device", DEFAULT_DEVICE),
-        "models_dir": os.getenv("MODELS_DIR") or app.get("models_dir", DEFAULT_MODELS_DIR),
+        "models_dir": models_dir,
         "results_dir": os.getenv("RESULTS_DIR") or app.get("results_dir", DEFAULT_RESULTS_DIR),
         "ollama_url": os.getenv("OLLAMA_URL") or app.get("ollama_url", OLLAMA_BASE_URL),
         "airllm_max_seq_len": int(
