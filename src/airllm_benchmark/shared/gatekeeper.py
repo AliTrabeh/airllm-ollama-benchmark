@@ -17,6 +17,16 @@ _RATE_LIMITS_PATH = (
 logger = logging.getLogger(__name__)
 
 
+class NonRetriableError(RuntimeError):
+    """Raised by a service when retrying the identical call could never succeed.
+
+    ApiGatekeeper.call() re-raises these immediately, with their original message
+    intact, instead of burning through max_retries attempts and burying the
+    actionable message (e.g. "Run: ollama pull <model>") inside a generic
+    "All N attempts failed" wrapper.
+    """
+
+
 def _load_rate_limits() -> dict:
     if _RATE_LIMITS_PATH.exists():
         data = json.loads(_RATE_LIMITS_PATH.read_text(encoding="utf-8"))
@@ -78,6 +88,13 @@ class ApiGatekeeper:
                 self._log.append(entry)
                 logger.debug("gatekeeper: %s OK in %.3fs", service, entry["latency_s"])
                 return result
+            except (NonRetriableError, ImportError):
+                # ImportError (missing torch/transformers/airllm) is just as
+                # non-transient as a NonRetriableError -- retrying installs nothing.
+                entry["latency_s"] = time.perf_counter() - t0
+                entry["success"] = False
+                self._log.append(entry)
+                raise
             except Exception as exc:
                 entry["latency_s"] = time.perf_counter() - t0
                 entry["success"] = False

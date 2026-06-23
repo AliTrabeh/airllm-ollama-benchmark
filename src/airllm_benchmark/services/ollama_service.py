@@ -11,14 +11,15 @@ from airllm_benchmark.shared.constants import (
     OLLAMA_GENERATE_EP,
     OLLAMA_HEALTH_EP,
 )
+from airllm_benchmark.shared.gatekeeper import NonRetriableError
 
 
 class OllamaConnectionError(RuntimeError):
     """Ollama server is not reachable."""
 
 
-class OllamaModelNotFoundError(RuntimeError):
-    """Requested model is not installed locally."""
+class OllamaModelNotFoundError(NonRetriableError):
+    """Requested model is not installed locally -- retrying changes nothing."""
 
 
 class OllamaTimeoutError(RuntimeError):

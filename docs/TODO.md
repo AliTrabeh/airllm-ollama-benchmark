@@ -314,3 +314,24 @@ dependency-injection pattern as `_ollama()`/`_hf()`/`_airllm()`). Removed `main.
 wrote the JSON file end-to-end, no regression.
 
 210 tests passing, 96.53% coverage, ruff clean, all files ≤150 lines.
+
+**Sixth finding (a behavioral bug, not a missing feature):** `ApiGatekeeper.call()` retries
+*every* exception type blindly, including permanent failures. Verified directly: an
+`OllamaModelNotFoundError` ("Model 'xyz' not found locally. Run: ollama pull xyz") got retried
+4 times (`max_retries=3` + initial attempt) pointlessly — retrying the identical request can
+never make a missing model appear — and the final error shown to the user was the generic
+`RuntimeError("All 4 attempts for 'ollama' failed")`, completely burying the actionable
+"Run: ollama pull xyz" guidance. This directly undermines the exact UX strength documented in
+the README's Nielsen-heuristics section ("actionable next steps... instead of bare exceptions")
+— the guidance existed in the code but the gatekeeper silently discarded it.
+
+**Fixed:** added `NonRetriableError` (in `shared/gatekeeper.py`, the natural shared location
+both the gatekeeper and any service can import) — when a service raises it, `call()` re-raises
+immediately with the original message intact, no retries burned. `OllamaModelNotFoundError` now
+inherits from it. Also treated plain `ImportError` (missing torch/transformers/airllm) the same
+way — retrying doesn't install a package either. 4 new tests; verified directly that the same
+model-not-found scenario now calls the service exactly once and surfaces the original, helpful
+message instead of the generic wrapper.
+
+212 tests passing, 96.56% coverage, ruff clean, all files ≤150 lines. Verified against a real
+`--method ollama` run — no regression in the success path.

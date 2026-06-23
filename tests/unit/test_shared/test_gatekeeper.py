@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from airllm_benchmark.shared.gatekeeper import ApiGatekeeper
+from airllm_benchmark.shared.gatekeeper import ApiGatekeeper, NonRetriableError
 
 _FAST = {"requests_per_minute": 60, "max_retries": 3, "retry_delay_s": 0.0}
 _NO_RETRY = {"requests_per_minute": 60, "max_retries": 0, "retry_delay_s": 0.0}
@@ -101,3 +101,29 @@ def test_call_log_is_a_copy() -> None:
     log = gk.call_log
     log.clear()
     assert len(gk.call_log) == 1  # internal log unaffected
+
+
+def test_non_retriable_error_skips_retries():
+    attempts: list[int] = []
+
+    def always_fail():
+        attempts.append(1)
+        raise NonRetriableError("model not found, run: ollama pull x")
+
+    gk = ApiGatekeeper(rate_limits={"svc": _FAST})  # max_retries=3
+    with pytest.raises(NonRetriableError, match="ollama pull x"):
+        gk.call("svc", always_fail)
+    assert len(attempts) == 1  # no retries attempted
+
+
+def test_import_error_skips_retries() -> None:
+    attempts: list[int] = []
+
+    def always_fail():
+        attempts.append(1)
+        raise ImportError("torch not installed")
+
+    gk = ApiGatekeeper(rate_limits={"svc": _FAST})
+    with pytest.raises(ImportError):
+        gk.call("svc", always_fail)
+    assert len(attempts) == 1
