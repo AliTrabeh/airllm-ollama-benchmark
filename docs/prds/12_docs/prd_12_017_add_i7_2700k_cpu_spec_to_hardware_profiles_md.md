@@ -3,7 +3,7 @@
 **Group:** 12_docs
 **Type:** impl
 **Target file:** `docs/HARDWARE_PROFILES.md`
-**Status:** DONE
+**Status:** TODO
 
 ---
 

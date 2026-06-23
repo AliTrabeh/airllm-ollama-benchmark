@@ -160,8 +160,31 @@ Implementation order follows dependency graph. Mark status as work progresses.
 |------|------|--------|
 | Complete README.md (all sections) | README.md | DONE (terminal sample + COSTS.md linked, stale test-count stat fixed) |
 | Update PROMPTS.md with all AI prompts used | PROMPTS.md | DONE (Session 2 reconstructed from git history; Session 3 recorded verbatim from this conversation) |
-| Update PRD statuses to DONE | docs/prds/*.md | DONE (570 files, Status field flipped; acceptance-criteria checkboxes not individually re-verified) |
-| Run FEEDBACK_RISK_CHECKLIST.md verification | — | DONE (caught + fixed a real RISK-03 hardcoded-path violation; created docs/COSTS.md and assets/terminal_output_sample.txt; fresh-clone smoke test still open) |
+| Update PRD statuses to DONE | docs/prds/*.md | PARTIAL — see note below |
+| Run FEEDBACK_RISK_CHECKLIST.md verification | — | DONE (caught + fixed a real RISK-03 hardcoded-path violation; created docs/COSTS.md and assets/terminal_output_sample.txt; fresh-clone smoke test verified) |
 | Verify .env not committed | — | DONE (gitignored, untracked) |
 | Verify uv.lock committed | — | DONE |
 | Final git commit with clean history | — | DONE (working tree clean, all changes landed in scoped commits) |
+
+**Correction (2026-06-23):** The initial bulk PRD flip (570 files) was verified against only a
+sample of groups, not every group. A systematic check (every PRD's `Target file:` against the
+actual filesystem) found **48 files across 4 groups genuinely never implemented** — reverted
+back to `TODO`:
+
+- **`13_hardware` (23 files)** — an entire `HardwareProfiler` class was planned (CPU/RAM/GPU
+  detection, `estimate_model_fit()`, **`recommend_quantization(model_gb) -> 'fp16'|'q4'|'q2'`**)
+  and never built. This is the actual answer to "where was quantization" — it was *planned* as
+  a hardware-aware recommendation feature, not as something applied to any benchmark run. The
+  only quantization in the project today is incidental: Ollama's `llama3.2:3b` ships pre-quantized
+  (Q4_K_M GGUF) by Ollama itself, not by any code in this repo.
+- **`11_quality` (14 files) + `00_infrastructure` (4 files)** — GitHub Actions CI workflow
+  (`.github/workflows/ci.yml`) and a `Makefile` with lint/test/run targets — neither exists.
+- **`12_docs` (7 files)** — `docs/HARDWARE_PROFILES.md`, `LICENSE` (MIT), `CHANGELOG.md` — none exist.
+
+Everything else in the 570-file flip was checked against the filesystem too: most "missing
+target file" hits were PRDs pointing at stale planned filenames that got consolidated/renamed
+during implementation (e.g. planned `hf_service.py` → actual `hf_baseline_service.py`; planned
+`metrics/metrics_collector.py` + `metrics/cost_estimator.py` → consolidated into
+`services/metrics_service.py`; planned per-method integration test files → consolidated into
+`tests/integration/test_full_pipeline.py`). Those are legitimately DONE — same functionality,
+different file layout than the original micro-PRD plan.
