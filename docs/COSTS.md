@@ -4,42 +4,58 @@ Real measurements from `results/*.json`, captured on the project's reference har
 (Intel i7-4790K, RTX 3060 Ti 8 GB VRAM, 32 GB DDR3). All runs use 20 generated tokens
 and the prompt `"Explain quantum entanglement in one sentence."`.
 
-## Latest successful run per method
+## Final comparison run (`--method all`, single process, cached models)
 
-| Method | Model | Latency | RAM Peak | VRAM Peak | Tokens/s | Energy (kWh) | Cost @ $0.10/kWh |
-|--------|-------|---------|----------|-----------|----------|---------------|------------------|
-| Ollama | llama3.2:3b | 2.62 s | 507 MB | 0 MB | 128.96 | ~0.00015 | ~$0.000015 |
-| HF Baseline | microsoft/Phi-3-mini-4k-instruct | 615.96 s* | 10,359 MB | 7,309 MB | 0.03 | ~0.03422 | ~$0.0034 |
-| AirLLM | mistralai/Mistral-7B-v0.1 | 444.39 s | 4,560 MB | 8 MB | 0.05 | ~0.00802 | ~$0.0008 |
+All three methods run back-to-back in the same `--method all` invocation, with every
+model already cached locally (no download time included) — the most directly comparable
+measurement available.
 
-\* This HF Baseline run includes a one-time model download (~10 min, triggered by the
-models-directory migration to a new drive). A cached run of an equivalent-size model
-(microsoft/phi-2, 2.7B) without download overhead measured **509.2 s** latency and
-**5,328 MB** VRAM peak — inference time dominates regardless of download status, because
-loading a multi-GB checkpoint onto an 8 GB GPU is itself slow on this hardware.
+| Method | Model | Latency | RAM Peak | VRAM Peak | Disk | Tokens/s | Energy (kWh) | Cost @ $0.10/kWh |
+|--------|-------|---------|----------|-----------|------|----------|---------------|------------------|
+| Ollama | llama3.2:3b | 2.77 s | 506 MB | 0 MB | 1.88 GB | 88.88 | ~0.00015 | ~$0.000015 |
+| HF Baseline | microsoft/Phi-3-mini-4k-instruct | 54.60 s | 11,048 MB | 7,309 MB | 7.12 GB | 0.37 | ~0.00303 | ~$0.0003 |
+| AirLLM | mistralai/Mistral-7B-v0.1 | 706.67 s | 14,916 MB | 8 MB | 0.002 GB* | 0.03 | ~0.01276 | ~$0.0013 |
+
+\* AirLLM's `disk_gb` in this particular run undercounts — a config bug (since fixed,
+see `shared/config.py::load_config`) meant this run's Mistral-7B download landed under
+the system default HF cache instead of the configured `models_dir`, so the disk-size
+probe looked in the wrong place. The model is genuinely ~14 GB on disk; future runs
+measure this correctly.
 
 ## CPU time / disk
 
 - CPU/wall time is captured as `latency_s` in every result (see table above).
-- Disk usage: model weights now live outside the repo at `D:/ai_models` — `Phi-3-mini-4k-instruct`
-  (~7.6 GB), `Mistral-7B-v0.1` (~14 GB), `phi-2` (~5.4 GB), `TinyLlama-1.1B` (~2.2 GB).
-  Total disk footprint observed: ~36 GB.
+- Disk usage is now measured per-run via `disk_gb` (HF-cache snapshot size for
+  hf_baseline/airllm, Ollama's `/api/tags` size field for ollama) rather than estimated.
+- Model weights live outside the repo at `D:/ai_models` — `Phi-3-mini-4k-instruct`
+  (~7.6 GB), `Mistral-7B-v0.1` (~14 GB, plus a transient duplicate on the system default
+  cache from the bug above), `phi-2` (~5.4 GB), `TinyLlama-1.1B` (~2.2 GB), `llama3.2:3b`
+  (~1.9 GB, Ollama-managed).
 
 ## Interpretation
 
 - **Ollama is the only method viable for interactive use** on this hardware: it serves a
-  quantized 3B model in ~2.6 s using a few hundred MB of RAM and zero VRAM.
+  quantized 3B model in ~2.8 s using ~500 MB of RAM and zero VRAM, at 88.9 tokens/s.
 - **AirLLM trades latency for capability.** It runs Mistral-7B — a model whose fp16 weights
   (~14 GB) exceed the 8 GB VRAM card — by paging transformer layers from disk via `mmap`,
-  at the cost of ~170× the latency of Ollama and ~4,560 MB RAM. VRAM stays near zero (8 MB)
-  because layers are processed on CPU/disk, not held on the GPU.
-- **The standard HF baseline is the worst of both worlds for large models.** A naive
-  `from_pretrained` load of a model sized to nearly fill the GPU (Phi-3-mini, 7.3 GB VRAM
-  peak on an 8 GB card) is both slow (minutes, not seconds) and memory-hungry, with no
-  graceful degradation path if the model is any larger — it would simply OOM.
+  one layer at a time, entirely on CPU. Even with the model already cached locally, this
+  run took **11.8 minutes** (706.67 s) for 20 tokens — ~255× Ollama's latency — because
+  generating each token requires a full pass over all 35 layers, each individually loaded
+  from disk. VRAM stays near zero (8 MB) because layers never touch the GPU; RAM peaks
+  highest of the three methods (~14.9 GB) since paged layers, KV-cache, and intermediate
+  activations all stack up in system memory over the run.
+- **The standard HF baseline sits in between, and that's the risk it represents.** With
+  Phi-3-mini already cached, loading + generating took 54.6 s — far faster than AirLLM,
+  but still ~20× slower than Ollama, while peaking at 7.3 GB VRAM on an 8 GB card. A
+  naive `from_pretrained` load has **no fallback** if the next model is even slightly
+  larger: it doesn't degrade gracefully like AirLLM does, it just OOMs.
 - **Energy cost scales with latency, not model size directly.** AirLLM's per-run energy
-  cost (~0.008 kWh) is ~53× Ollama's, driven entirely by the extra ~7 minutes of wall time
-  at a lower 65 W CPU-bound TDP estimate, not by FLOPs.
+  cost (~0.0128 kWh) is ~85× Ollama's, driven by ~12 minutes of CPU-bound wall time at a
+  lower 65 W TDP estimate — not by raw FLOPs, since each individual layer computation is
+  small.
+- **Disk footprint is now measured, not estimated** (`disk_gb`): Ollama's quantized 3B
+  model is the smallest on disk (1.9 GB) despite being the fastest at inference — a useful
+  reminder that quantization buys both speed and storage efficiency simultaneously.
 
 ## Optimization recommendations
 

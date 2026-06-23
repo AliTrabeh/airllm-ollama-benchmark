@@ -247,17 +247,21 @@ Estimated energy cost per benchmark run at TDP (Thermal Design Power). See
 [`docs/COSTS.md`](docs/COSTS.md) for the full breakdown with real measured data
 and optimization recommendations.
 
-| Method | Model | Latency | RAM Peak | VRAM Peak | Energy (kWh) | Cost @ $0.10/kWh |
-|--------|-------|---------|----------|-----------|--------------|------------------|
-| Ollama | llama3.2:3b | ~2 s | ~600 MB | ~2000 MB | ~0.000111 kWh @ 200W | ~$0.0000111 |
-| HF Baseline | TinyLlama-1.1B | ~3 s | ~2000 MB | ~2200 MB | ~0.000167 kWh @ 200W | ~$0.0000167 |
-| AirLLM | Mistral-7B | ~14 min | ~1800 MB | 0 MB (CPU only) | ~0.015 kWh @ 65W | ~$0.0015 |
+| Method | Model | Latency | RAM Peak | VRAM Peak | Disk | Energy (kWh) | Cost @ $0.10/kWh |
+|--------|-------|---------|----------|-----------|------|--------------|------------------|
+| Ollama | llama3.2:3b | 2.77 s | 506 MB | 0 MB | 1.9 GB | ~0.00015 kWh @ 200W | ~$0.000015 |
+| HF Baseline | Phi-3-mini-4k-instruct | 54.6 s | 11,048 MB | 7,309 MB | 7.1 GB | ~0.00303 kWh @ 200W | ~$0.0003 |
+| AirLLM | Mistral-7B-v0.1 | 706.7 s (~11.8 min) | 14,916 MB | 8 MB (CPU only) | ~14 GB | ~0.01276 kWh @ 65W | ~$0.0013 |
+
+Measured in a single `--method all` run with all models pre-cached (GPU: RTX 3060 Ti, `device=cuda`).
 
 **Key observations:**
-- AirLLM's energy cost per run is ~270× higher than Ollama due to the long inference time
-- AirLLM uses **zero VRAM** — it runs entirely on CPU via `mmap` layer paging
-- The HF baseline OOMs on Mistral-7B (14 GB fp16 > 8 GB VRAM), proving AirLLM's unique value
-- Disk space: models/ uses ~2 GB (TinyLlama) + ~14 GB (Mistral-7B) = ~16 GB total
+- AirLLM's energy cost per run is ~85× higher than Ollama due to the long inference time
+- AirLLM uses **near-zero VRAM** (8 MB) — it runs entirely on CPU via `mmap` layer paging
+- HF Baseline already peaks at 7.3 GB VRAM on Phi-3-mini (an 8 GB card) — the next model
+  size up would OOM with no graceful fallback, unlike AirLLM
+- Ollama's quantized model is also the smallest on disk (1.9 GB) — quantization buys
+  speed and storage efficiency together
 
 **When AirLLM is worth the cost:**
 Use AirLLM when a model exceeds available VRAM/RAM and you have time to wait.
