@@ -96,3 +96,7 @@ logs/
 
 # Claude Code local config (permissions, session metadata)
 .claude/
+
+# Private grading/course materials — never push (contains student ID, grades)
+/Detailed_Feedback_Report_252608.pdf
+docs/GUIDELINES_REQUIREMENTS.md

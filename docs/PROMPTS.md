@@ -294,7 +294,11 @@ Each entry follows this structure:
   hw. i dont want mistakes like the one you did when you missed to do the quantization phase"
 - **Output Summary:** Found and committed the actual `Detailed_Feedback_Report_252608.pdf`
   (sitting untracked in the repo root the whole time) and verified `FEEDBACK_RISK_CHECKLIST.md`'s
-  quotes against it word-for-word — all accurate. Then, taking the "no more missed phases"
+  quotes against it word-for-word — all accurate. **Later removed** (and gitignored) once the
+  user pointed out it publicly exposes a student ID and grade on a public GitHub repo;
+  `docs/GUIDELINES_REQUIREMENTS.md` was removed alongside it for the same reason. The
+  verification/conclusions drawn from it remain valid and are preserved in
+  `FEEDBACK_RISK_CHECKLIST.md`. Then, taking the "no more missed phases"
   instruction literally, re-audited every consolidated service module method-by-method instead
   of trusting class-level "equivalent" judgments from earlier passes. Found and fixed six real,
   previously-undetected gaps: (1) `HFBaselineService` had no proactive memory check and would

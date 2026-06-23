@@ -12,7 +12,7 @@ Implementation order follows dependency graph. Mark status as work progresses.
 |------|------|--------|
 | Read all 3 source PDFs | — | DONE |
 | Create docs/ASSIGNMENT_ANALYSIS.md | docs/ASSIGNMENT_ANALYSIS.md | DONE |
-| Create docs/GUIDELINES_REQUIREMENTS.md | docs/GUIDELINES_REQUIREMENTS.md | DONE |
+| Create docs/GUIDELINES_REQUIREMENTS.md | docs/GUIDELINES_REQUIREMENTS.md | DONE (later removed + gitignored — see 2026-06-23 note near end of this file) |
 | Create docs/GRADING_RUBRIC.md | docs/GRADING_RUBRIC.md | DONE |
 | Create docs/FEEDBACK_RISK_CHECKLIST.md | docs/FEEDBACK_RISK_CHECKLIST.md | DONE |
 | Create docs/PLAN.md | docs/PLAN.md | DONE |
@@ -335,3 +335,11 @@ message instead of the generic wrapper.
 
 212 tests passing, 96.56% coverage, ruff clean, all files ≤150 lines. Verified against a real
 `--method ollama` run — no regression in the success path.
+
+**Privacy correction (2026-06-23):** `Detailed_Feedback_Report_252608.pdf` and
+`docs/GUIDELINES_REQUIREMENTS.md` were removed from git tracking and added to `.gitignore`.
+The feedback PDF contains a student ID and grade — not appropriate for a public GitHub repo.
+Removed going forward only (not purged from git history, per the user's explicit choice); the
+verification this session already did against the PDF's actual content remains valid and is
+preserved in `FEEDBACK_RISK_CHECKLIST.md`, which paraphrases/quotes risk descriptions without
+exposing any grade or student ID.
