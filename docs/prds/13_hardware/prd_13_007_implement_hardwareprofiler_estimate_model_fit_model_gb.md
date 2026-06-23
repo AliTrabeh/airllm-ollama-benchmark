@@ -3,7 +3,7 @@
 **Group:** 13_hardware
 **Type:** impl
 **Target file:** `src/airllm_benchmark/shared/hardware_profiler.py`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

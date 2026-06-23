@@ -160,7 +160,7 @@ Implementation order follows dependency graph. Mark status as work progresses.
 |------|------|--------|
 | Complete README.md (all sections) | README.md | DONE (terminal sample + COSTS.md linked, stale test-count stat fixed) |
 | Update PROMPTS.md with all AI prompts used | PROMPTS.md | DONE (Session 2 reconstructed from git history; Session 3 recorded verbatim from this conversation) |
-| Update PRD statuses to DONE | docs/prds/*.md | PARTIAL — see note below |
+| Update PRD statuses to DONE | docs/prds/*.md | PARTIAL — 25 files genuinely TODO, see note below |
 | Run FEEDBACK_RISK_CHECKLIST.md verification | — | DONE (caught + fixed a real RISK-03 hardcoded-path violation; created docs/COSTS.md and assets/terminal_output_sample.txt; fresh-clone smoke test verified) |
 | Verify .env not committed | — | DONE (gitignored, untracked) |
 | Verify uv.lock committed | — | DONE |
@@ -177,6 +177,13 @@ back to `TODO`:
   a hardware-aware recommendation feature, not as something applied to any benchmark run. The
   only quantization in the project today is incidental: Ollama's `llama3.2:3b` ships pre-quantized
   (Q4_K_M GGUF) by Ollama itself, not by any code in this repo.
+  **Update (2026-06-23): implemented.** `src/airllm_benchmark/shared/hardware_profiler.py` now
+  exists (`detect_cpu/ram/gpu`, `get_profile`, `estimate_model_fit`, `recommend_quantization`,
+  `to_markdown`), with 16 tests (`tests/unit/test_shared/test_hardware_profiler.py`). Wired into
+  `main.py`: every run prints a live hardware profile, plus a quantization recommendation for
+  any configured model whose name encodes a param count (e.g. `Mistral-7B-v0.1` → "recommend q4").
+  This 23-file group is back to `DONE`; `docs/HARDWARE_PROFILES.md` (group `12_docs`, separate
+  scope) remains `TODO`.
 - **`11_quality` (14 files) + `00_infrastructure` (4 files)** — GitHub Actions CI workflow
   (`.github/workflows/ci.yml`) and a `Makefile` with lint/test/run targets — neither exists.
 - **`12_docs` (7 files)** — `docs/HARDWARE_PROFILES.md`, `LICENSE` (MIT), `CHANGELOG.md` — none exist.
