@@ -6,7 +6,6 @@ import sys
 
 from airllm_benchmark.models.benchmark_result import BenchmarkResult
 from airllm_benchmark.sdk.sdk import BenchmarkSDK
-from airllm_benchmark.services.results_service import ResultsService
 from airllm_benchmark.shared.config import load_config
 from airllm_benchmark.shared.constants import VALID_METHODS
 from airllm_benchmark.shared.hardware_profiler import HardwareProfiler, model_gb_from_name
@@ -84,7 +83,6 @@ def main(argv: list[str] | None = None) -> int:
         config["results_dir"] = args.output_dir
 
     sdk = BenchmarkSDK(config=config)
-    results_svc = ResultsService(config=config)
 
     print(f"airllm-benchmark v{VERSION}  |  method={args.method}  |  tokens={args.max_tokens}")
     _print_hardware_summary(config, args.method)
@@ -93,13 +91,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.method == "all":
             report = sdk.run_all(args.prompt, args.max_tokens)
             for r in report.results:
-                results_svc.save_result(r)
-            path = results_svc.save_comparison(report)
+                sdk.save_result(r)
+            path = sdk.save_comparison(report)
             print(report.to_markdown())
             print(f"\nSaved -> {path}")
         else:
             result = _run_single(sdk, config, args.method, args.prompt, args.max_tokens)
-            path = results_svc.save_result(result)
+            path = sdk.save_result(result)
             _print_result(result, verbose=args.verbose)
             print(f"\nSaved -> {path}")
     except (ValueError, RuntimeError) as exc:

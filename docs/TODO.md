@@ -293,3 +293,24 @@ regression in the happy path.
 this strict pass has found by checking PRDs against the actual codebase method-by-method rather
 than trusting consolidation-level judgments — a clear pattern: every service module that was
 "consolidated and marked DONE" without per-method verification had at least one real, silent gap.
+
+**Fifth and most significant finding:** checking the `07_sdk` group surfaced a genuine
+architecture violation, not just a missing edge case. `sdk.py`'s own docstring states
+*"CLI and tests must use this class; no service may be called directly"* — guideline §4.1
+makes this a mandatory rule, not a style preference — yet `main.py` was directly instantiating
+and calling `ResultsService.save_result()`/`save_comparison()`, bypassing the SDK entirely for
+every single run. PRD-07-014/015 had planned exactly the `save_result`/`load_results` SDK
+methods that would have prevented this, but they were never built (the file-level
+"hf_service.py-style consolidation" check doesn't catch this kind of gap — `sdk.py` itself
+*did* exist with real content, it just didn't include these specific methods).
+
+**Fixed:** added `BenchmarkSDK.save_result()`, `save_comparison()`, and `load_results()`
+(delegating to a lazily-constructed `ResultsService`, following the exact same
+dependency-injection pattern as `_ollama()`/`_hf()`/`_airllm()`). Removed `main.py`'s direct
+`ResultsService` import and instantiation entirely — it now only ever talks to `BenchmarkSDK`.
+7 new tests (`test_sdk_storage.py`); `test_main.py`'s mocks updated to configure
+`save_result`/`save_comparison` directly on the SDK mock instead of patching a separate
+`ResultsService`. Verified against a real `--method ollama` run — `sdk.save_result()` correctly
+wrote the JSON file end-to-end, no regression.
+
+210 tests passing, 96.53% coverage, ruff clean, all files ≤150 lines.

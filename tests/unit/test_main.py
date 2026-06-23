@@ -20,22 +20,16 @@ def _result(method: str = "ollama") -> BenchmarkResult:
 
 
 @pytest.fixture
-def mock_sdk() -> MagicMock:
+def mock_sdk(tmp_path: Path) -> MagicMock:
     report = ComparisonReport(results=[_result("ollama"), _result("hf_baseline"), _result("airllm")])
     sdk = MagicMock()
     sdk.run_all.return_value = report
     sdk.run_ollama.return_value = _result("ollama")
     sdk.run_hf_baseline.return_value = _result("hf_baseline")
     sdk.run_airllm.return_value = _result("airllm")
+    sdk.save_result.return_value = tmp_path / "run_test.json"
+    sdk.save_comparison.return_value = tmp_path / "comparison_test.json"
     return sdk
-
-
-@pytest.fixture
-def mock_svc(tmp_path: Path) -> MagicMock:
-    svc = MagicMock()
-    svc.save_result.return_value = tmp_path / "run_test.json"
-    svc.save_comparison.return_value = tmp_path / "comparison_test.json"
-    return svc
 
 
 # ---------------------------------------------------------------------------
@@ -78,41 +72,35 @@ def test_parse_args_invalid_method() -> None:
 # main() integration (services mocked)
 # ---------------------------------------------------------------------------
 
-def test_main_returns_zero(mock_sdk, mock_svc) -> None:
-    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=mock_sdk), \
-         patch("airllm_benchmark.main.ResultsService", return_value=mock_svc):
+def test_main_returns_zero(mock_sdk) -> None:
+    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=mock_sdk):
         assert main([]) == 0
 
 
-def test_main_ollama_returns_zero(mock_sdk, mock_svc) -> None:
-    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=mock_sdk), \
-         patch("airllm_benchmark.main.ResultsService", return_value=mock_svc):
+def test_main_ollama_returns_zero(mock_sdk) -> None:
+    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=mock_sdk):
         assert main(["--method", "ollama"]) == 0
 
 
-def test_main_airllm_returns_zero(mock_sdk, mock_svc) -> None:
-    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=mock_sdk), \
-         patch("airllm_benchmark.main.ResultsService", return_value=mock_svc):
+def test_main_airllm_returns_zero(mock_sdk) -> None:
+    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=mock_sdk):
         assert main(["--method", "airllm"]) == 0
 
 
-def test_main_error_returns_one(mock_svc) -> None:
+def test_main_error_returns_one() -> None:
     sdk = MagicMock()
     sdk.run_all.side_effect = RuntimeError("connection failed")
-    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=sdk), \
-         patch("airllm_benchmark.main.ResultsService", return_value=mock_svc):
+    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=sdk):
         assert main([]) == 1
 
 
-def test_main_all_saves_comparison(mock_sdk, mock_svc) -> None:
-    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=mock_sdk), \
-         patch("airllm_benchmark.main.ResultsService", return_value=mock_svc):
+def test_main_all_saves_comparison(mock_sdk) -> None:
+    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=mock_sdk):
         main([])
-    mock_svc.save_comparison.assert_called_once()
+    mock_sdk.save_comparison.assert_called_once()
 
 
-def test_main_single_saves_result(mock_sdk, mock_svc) -> None:
-    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=mock_sdk), \
-         patch("airllm_benchmark.main.ResultsService", return_value=mock_svc):
+def test_main_single_saves_result(mock_sdk) -> None:
+    with patch("airllm_benchmark.main.BenchmarkSDK", return_value=mock_sdk):
         main(["--method", "ollama"])
-    mock_svc.save_result.assert_called_once()
+    mock_sdk.save_result.assert_called_once()

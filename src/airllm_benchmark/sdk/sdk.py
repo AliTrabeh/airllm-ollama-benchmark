@@ -4,6 +4,7 @@ CLI and tests must use this class; no service may be called directly.
 """
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from airllm_benchmark.models.benchmark_result import BenchmarkResult
@@ -28,6 +29,7 @@ class BenchmarkSDK:
         ollama_service: Any = None,
         hf_service: Any = None,
         airllm_service: Any = None,
+        results_service: Any = None,
     ) -> None:
         if config is None:
             from airllm_benchmark.shared.config import load_config  # noqa: PLC0415
@@ -37,6 +39,7 @@ class BenchmarkSDK:
         self._ollama_svc = ollama_service
         self._hf_svc = hf_service
         self._airllm_svc = airllm_service
+        self._results_svc = results_service
 
     # ------------------------------------------------------------------
     # Service accessors (lazy import so unimplemented services don't crash)
@@ -59,6 +62,12 @@ class BenchmarkSDK:
             return self._airllm_svc
         from airllm_benchmark.services.airllm_service import AirLLMService  # noqa: PLC0415
         return AirLLMService()
+
+    def _results(self) -> Any:
+        if self._results_svc is not None:
+            return self._results_svc
+        from airllm_benchmark.services.results_service import ResultsService  # noqa: PLC0415
+        return ResultsService(config=self._config)
 
     # ------------------------------------------------------------------
     # Public API
@@ -102,3 +111,13 @@ class BenchmarkSDK:
                     BenchmarkResult.error_result(method_name, model, prompt, str(exc))
                 )
         return ComparisonReport(results=results)
+
+    def save_result(self, result: BenchmarkResult) -> Path:
+        return self._results().save_result(result)
+
+    def save_comparison(self, report: ComparisonReport) -> Path:
+        return self._results().save_comparison(report)
+
+    def load_results(self) -> list[BenchmarkResult]:
+        svc = self._results()
+        return [svc.load_result(p) for p in svc.list_results()]
