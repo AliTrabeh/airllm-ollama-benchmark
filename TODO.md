@@ -160,7 +160,7 @@ Implementation order follows dependency graph. Mark status as work progresses.
 |------|------|--------|
 | Complete README.md (all sections) | README.md | DONE (terminal sample + COSTS.md linked, stale test-count stat fixed) |
 | Update PROMPTS.md with all AI prompts used | PROMPTS.md | DONE (Session 2 reconstructed from git history; Session 3 recorded verbatim from this conversation) |
-| Update PRD statuses to DONE | docs/prds/*.md | PARTIAL — 25 files genuinely TODO, see note below |
+| Update PRD statuses to DONE | docs/prds/*.md | PARTIAL — 61 files genuinely TODO, see note below |
 | Run FEEDBACK_RISK_CHECKLIST.md verification | — | DONE (caught + fixed a real RISK-03 hardcoded-path violation; created docs/COSTS.md and assets/terminal_output_sample.txt; fresh-clone smoke test verified) |
 | Verify .env not committed | — | DONE (gitignored, untracked) |
 | Verify uv.lock committed | — | DONE |
@@ -188,10 +188,34 @@ back to `TODO`:
   (`.github/workflows/ci.yml`) and a `Makefile` with lint/test/run targets — neither exists.
 - **`12_docs` (7 files)** — `docs/HARDWARE_PROFILES.md`, `LICENSE` (MIT), `CHANGELOG.md` — none exist.
 
-Everything else in the 570-file flip was checked against the filesystem too: most "missing
-target file" hits were PRDs pointing at stale planned filenames that got consolidated/renamed
-during implementation (e.g. planned `hf_service.py` → actual `hf_baseline_service.py`; planned
-`metrics/metrics_collector.py` + `metrics/cost_estimator.py` → consolidated into
-`services/metrics_service.py`; planned per-method integration test files → consolidated into
-`tests/integration/test_full_pipeline.py`). Those are legitimately DONE — same functionality,
-different file layout than the original micro-PRD plan.
+**Second pass (2026-06-23):** Re-verified every "missing target file" hit individually rather
+than assuming rename = equivalent. Most were legitimate consolidations (e.g. planned
+`hf_service.py` → actual `hf_baseline_service.py`, same class, equivalent tests — kept `DONE`).
+But three more genuine gaps were found and reverted:
+
+- **`CostEstimator` class (06_metrics, 13 files: 014-020, 033-039)** — never built. What exists
+  instead is the *same cost formula duplicated three times* (`_cost_estimate()` in
+  `ollama_service.py`, `hf_baseline_service.py`, `airllm_service.py`) rather than one shared,
+  hardware-profile-aware class with separate CPU/GPU/combined-cost methods. Functionally similar
+  output, but a real reuse/duplication gap, not just a rename.
+- **`ResultsStorage.load_by_method()` / `load_latest()` (08_storage, 5 files: 010, 011, 023-025)**
+  — `ResultsService` only has a generic `list_results()` with no filtering; these specific
+  convenience methods don't exist.
+- **True end-to-end integration tests against live services (16 files: 03_ollama 042-049,
+  04_hf_baseline 043-045, 05_airllm 043-047)** — what exists (`test_full_pipeline.py`) integration
+  -tests the SDK→ResultsService→ChartService wiring with all three services *mocked*. That's a
+  legitimate, CI-safe testing choice, but it's not the same thing as the planned tests, which
+  wanted real Ollama calls / real HF downloads / real AirLLM runs as part of the suite.
+- **`models/.gitkeep` (00_044)** — reverted for honesty (file doesn't exist, models/ moved
+  off-repo to a configurable drive), though this one is a non-issue in practice: the directory
+  is created on demand by whichever downloader writes to it.
+
+Everything else in the 570-file flip was checked against the filesystem: the remaining "missing
+target file" hits are legitimate consolidations (`metrics/metrics_collector.py` →
+`services/metrics_service.py`, same `MetricsCollector` class; `storage/report_generator.py` →
+methods on `ComparisonReport` instead of a separate class — verified the planned methods
+`generate_markdown_table`/`generate_cost_section`/`generate_recommendations`/`generate_full_report`
+all have equivalents). Those remain `DONE` — same functionality, different file layout than the
+original micro-PRD plan. This second pass spot-checked the highest-risk consolidation claims
+rather than re-deriving all ~570 files line-by-line; if something else turns up missing later,
+treat it the same way — verify against the filesystem before trusting a `DONE` status.
