@@ -95,3 +95,10 @@ def test_color_scheme_has_all_three_methods() -> None:
 
 def test_chartservice_uses_config_assets_dir(tmp_path: Path) -> None:
     assert ChartService(config={"assets_dir": str(tmp_path)})._assets_dir == tmp_path
+
+
+def test_plot_latency_vs_tokens_line_returns_named_png(tmp_path: Path) -> None:
+    svc = ChartService(config={"assets_dir": str(tmp_path)})
+    path = svc.plot_latency_vs_tokens_line([5, 10, 20, 40], [0.5, 0.9, 1.8, 3.5], "ollama")
+    assert path.name == "latency_vs_tokens_line.png"
+    assert path.exists()

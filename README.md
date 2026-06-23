@@ -194,6 +194,37 @@ Saved → results/comparison_20260622T121500Z.json
 
 ---
 
+## UI/UX & Usability
+
+This project's "UI" is the CLI. Applying [Nielsen's 10 usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/):
+
+1. **Visibility of system status** — every run prints a hardware profile, then per-method
+   progress (download/loading bars from `transformers`/`huggingface_hub`), then a result
+   block. Nothing runs silently.
+2. **Match real-world language** — output uses plain terms (`Latency`, `RAM`, `Cost`), not
+   internal jargon (no raw class names or stack traces on the happy path).
+3. **User control and freedom** — every parameter (`--method`, `--prompt`, `--max-tokens`,
+   `--output-dir`) is overridable per-invocation; nothing is hardcoded into a single flow.
+4. **Consistency and standards** — all three methods share one CLI shape, one JSON result
+   schema (`BenchmarkResult`), and one summary format, regardless of which method ran.
+5. **Error prevention** — `--max-tokens` defaults small (20) specifically to avoid an
+   inexperienced user accidentally starting a 10+ minute AirLLM run by mistake; the README
+   calls this out explicitly under "Start small."
+6. **Recognition over recall** — `--help` and `--version` are standard argparse flags; the
+   user never needs to remember flag names from memory alone.
+7. **Flexibility and efficiency of use** — power users can skip straight to `--method all`
+   for the full comparison in one command; new users can run one method at a time.
+8. **Aesthetic and minimalist design** — the default (non-`--verbose`) output is five lines:
+   status, latency, tokens, RAM, cost. The full JSON is opt-in via `--verbose`.
+9. **Help users recognize, diagnose, and recover from errors** — connection/model-not-found
+   errors print actionable next steps (e.g. `Start it with: ollama serve`,
+   `Run: ollama pull <model>`) instead of bare exceptions.
+10. **Help and documentation** — this README's Usage section shows real captured output for
+    every mode; [`assets/terminal_output_sample.txt`](assets/terminal_output_sample.txt) is an
+    actual terminal capture, not a mock-up.
+
+---
+
 ## Configuration
 
 ### Environment variables (`.env`)

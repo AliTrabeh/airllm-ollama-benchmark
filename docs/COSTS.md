@@ -62,6 +62,26 @@ instead of degrading — AirLLM's behavior doesn't depend on this driver quirk t
   cache from the bug above), `phi-2` (~5.4 GB), `TinyLlama-1.1B` (~2.2 GB), `llama3.2:3b`
   (~1.9 GB, Ollama-managed).
 
+## Parameter sensitivity: latency vs. `max_tokens` (Ollama)
+
+A natural question: does latency scale with `max_tokens`? Measured on Ollama (warm model,
+`llama3.2:3b`) across 5/10/20/40/80 tokens:
+
+| max_tokens | 5 | 10 | 20 | 40 | 80 |
+|------------|---|----|----|----|----|
+| Latency (s) | 2.62 | 2.77 | 2.82 | 3.02 | 2.98 |
+
+See [`assets/latency_vs_tokens_line.png`](../assets/latency_vs_tokens_line.png).
+
+**Finding:** latency is essentially flat (2.6–3.0 s) across a 16× range in token count. For a
+small, already-warm model like `llama3.2:3b`, wall-clock time is dominated by fixed overhead
+(HTTP round-trip, prompt processing) rather than by the cost of generating additional tokens —
+the model's own measured throughput (~89–125 tok/s) means even 80 tokens only adds ~0.5–0.9s
+of actual generation time, within the noise of everything else in the request. This would not
+hold for AirLLM, where each *additional* token requires another full 35-layer disk-paging pass
+(confirmed earlier: ~706s for 20 tokens, ~35s/token) — `max_tokens` is the dominant cost driver
+there, not a rounding error.
+
 ## Interpretation
 
 - **Ollama is the only method viable for interactive use** on this hardware: it serves a

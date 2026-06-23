@@ -107,6 +107,24 @@ class ChartService:
         plt.close(fig)
         return path
 
+    def plot_latency_vs_tokens_line(self, token_counts: list[int], latencies_s: list[float], method: str) -> Path:
+        """Sensitivity analysis: how latency scales with --max-tokens for one method."""
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots(figsize=(8, 5))
+        color = self.COLOR_SCHEME.get(method, "#999")
+        ax.plot(token_counts, latencies_s, marker="o", color=color, linewidth=2)
+        ax.set_title(f"Latency vs. max_tokens — {method}")
+        ax.set_xlabel("max_tokens")
+        ax.set_ylabel("Latency (s)")
+        ax.grid(True, alpha=0.3)
+        path = self._save_chart(fig, "latency_vs_tokens_line")
+        plt.close(fig)
+        return path
+
     def generate_all_charts(self, results: list[BenchmarkResult]) -> list[Path]:
         return [
             self.plot_latency_bar(results),
