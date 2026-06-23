@@ -3,7 +3,7 @@
 **Group:** 00_infrastructure
 **Type:** impl
 **Target file:** `.github/workflows/ci.yml`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

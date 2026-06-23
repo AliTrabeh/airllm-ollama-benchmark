@@ -3,7 +3,7 @@
 **Group:** 12_docs
 **Type:** impl
 **Target file:** `CHANGELOG.md`
-**Status:** TODO
+**Status:** DONE
 
 ---
 

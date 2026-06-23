@@ -56,3 +56,16 @@ class ResultsService:
         if not self._results_dir.exists():
             return []
         return sorted(self._results_dir.glob("comparison_*.json"))
+
+    def load_by_method(self, method: str) -> list[BenchmarkResult]:
+        """Load every saved result for one method, oldest first."""
+        return [r for p in self.list_results() if (r := self.load_result(p)).method == method]
+
+    def load_latest(self, method: str | None = None) -> BenchmarkResult | None:
+        """Load the most recently saved result, optionally filtered to one method."""
+        paths = self.list_results()
+        for path in reversed(paths):
+            result = self.load_result(path)
+            if method is None or result.method == method:
+                return result
+        return None

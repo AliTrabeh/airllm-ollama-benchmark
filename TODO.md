@@ -160,7 +160,7 @@ Implementation order follows dependency graph. Mark status as work progresses.
 |------|------|--------|
 | Complete README.md (all sections) | README.md | DONE (terminal sample + COSTS.md linked, stale test-count stat fixed) |
 | Update PROMPTS.md with all AI prompts used | PROMPTS.md | DONE (Session 2 reconstructed from git history; Session 3 recorded verbatim from this conversation) |
-| Update PRD statuses to DONE | docs/prds/*.md | PARTIAL — 61 files genuinely TODO, see note below |
+| Update PRD statuses to DONE | docs/prds/*.md | PARTIAL — 17 files genuinely TODO, see note below |
 | Run FEEDBACK_RISK_CHECKLIST.md verification | — | DONE (caught + fixed a real RISK-03 hardcoded-path violation; created docs/COSTS.md and assets/terminal_output_sample.txt; fresh-clone smoke test verified) |
 | Verify .env not committed | — | DONE (gitignored, untracked) |
 | Verify uv.lock committed | — | DONE |
@@ -185,27 +185,38 @@ back to `TODO`:
   This 23-file group is back to `DONE`; `docs/HARDWARE_PROFILES.md` (group `12_docs`, separate
   scope) remains `TODO`.
 - **`11_quality` (14 files) + `00_infrastructure` (4 files)** — GitHub Actions CI workflow
-  (`.github/workflows/ci.yml`) and a `Makefile` with lint/test/run targets — neither exists.
-- **`12_docs` (7 files)** — `docs/HARDWARE_PROFILES.md`, `LICENSE` (MIT), `CHANGELOG.md` — none exist.
+  and Makefile. **Update (2026-06-23): implemented.** `.github/workflows/ci.yml` (checkout,
+  setup-python 3.11, install uv, `uv sync --all-groups`, ruff, pytest+coverage, upload coverage
+  artifact) and `Makefile` (lint/test/run-ollama/run-hf/run-airllm/run-all/clean targets, tab
+  indentation verified) both now exist. Back to `DONE`.
+- **`12_docs` (7 files)** — `docs/HARDWARE_PROFILES.md`, `LICENSE` (MIT), `CHANGELOG.md`.
+  **Update (2026-06-23): implemented.** All three created — `HARDWARE_PROFILES.md` documents the
+  *actual* hardware used (i7-4790K, matching `config/hardware_profiles.json`) rather than the
+  stale i7-2700K the original PRD text named, plus the AirLLM-vs-HF-baseline analysis. Back to `DONE`.
 
 **Second pass (2026-06-23):** Re-verified every "missing target file" hit individually rather
 than assuming rename = equivalent. Most were legitimate consolidations (e.g. planned
 `hf_service.py` → actual `hf_baseline_service.py`, same class, equivalent tests — kept `DONE`).
-But three more genuine gaps were found and reverted:
+Three more genuine gaps were found; two are now fixed, one deliberately left open:
 
-- **`CostEstimator` class (06_metrics, 13 files: 014-020, 033-039)** — never built. What exists
-  instead is the *same cost formula duplicated three times* (`_cost_estimate()` in
-  `ollama_service.py`, `hf_baseline_service.py`, `airllm_service.py`) rather than one shared,
-  hardware-profile-aware class with separate CPU/GPU/combined-cost methods. Functionally similar
-  output, but a real reuse/duplication gap, not just a rename.
+- **`CostEstimator` class (06_metrics, 13 files: 014-020, 033-039)** — was never built; only a
+  duplicated inline formula existed. **Fixed:** `src/airllm_benchmark/metrics/cost_estimator.py`
+  now exists (hardware-profile-aware, `estimate_cpu_cost`/`estimate_gpu_cost`/
+  `estimate_combined_cost`/`kwh_from_tdp`/`format_cost_string`), with 7 tests. Deliberately
+  produces a bare USD string (`"$0.000123"`) rather than replacing the existing
+  `"~X kWh @ YW TDP"` format used throughout `BenchmarkResult.cost_estimate` — switching that
+  established, tested, documented format now would be disruptive for no real benefit. The
+  per-service `_cost_estimate()` duplication therefore still exists by choice, not oversight.
+  Back to `DONE`.
 - **`ResultsStorage.load_by_method()` / `load_latest()` (08_storage, 5 files: 010, 011, 023-025)**
-  — `ResultsService` only has a generic `list_results()` with no filtering; these specific
-  convenience methods don't exist.
+  — **Fixed:** both methods added to `ResultsService`, with 4 new tests. Back to `DONE`.
 - **True end-to-end integration tests against live services (16 files: 03_ollama 042-049,
-  04_hf_baseline 043-045, 05_airllm 043-047)** — what exists (`test_full_pipeline.py`) integration
-  -tests the SDK→ResultsService→ChartService wiring with all three services *mocked*. That's a
-  legitimate, CI-safe testing choice, but it's not the same thing as the planned tests, which
-  wanted real Ollama calls / real HF downloads / real AirLLM runs as part of the suite.
+  04_hf_baseline 043-045, 05_airllm 043-047)** — what exists (`test_full_pipeline.py`)
+  integration-tests the SDK→ResultsService→ChartService wiring with all three services *mocked*.
+  **Deliberately left as `TODO`**, not fixed: adding real Ollama calls / multi-GB HF downloads /
+  AirLLM runs to the automated test suite would make the just-added CI pipeline slow, flaky, and
+  dependent on a locally-running Ollama daemon + GPU — directly counter to why CI exists. The
+  mocked integration test is the correct trade-off here.
 - **`models/.gitkeep` (00_044)** — reverted for honesty (file doesn't exist, models/ moved
   off-repo to a configurable drive), though this one is a non-issue in practice: the directory
   is created on demand by whichever downloader writes to it.
