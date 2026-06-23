@@ -6,9 +6,16 @@ run on a machine with far less RAM/VRAM — at the cost of high latency (I/O-bou
 """
 from __future__ import annotations
 
+import logging
+import shutil
+from pathlib import Path
+
 from airllm_benchmark.models.benchmark_result import BenchmarkResult
 from airllm_benchmark.services.metrics_service import MetricsCollector
 from airllm_benchmark.shared.config import hf_model_dir_size_gb, load_config
+from airllm_benchmark.shared.hardware_profiler import model_gb_from_name
+
+logger = logging.getLogger(__name__)
 
 
 def _cost_estimate(latency_s: float, device: str = "cpu") -> str:
@@ -36,7 +43,23 @@ class AirLLMService:
                 f"Model file not found or disk error: {exc}",
             )
 
+    def _check_disk_space(self, model_id: str) -> None:
+        model_gb = model_gb_from_name(model_id)
+        if model_gb is None:
+            return
+        # AirLLM keeps both the downloaded checkpoint and the split-per-layer copy on
+        # disk at once during the one-time split step -- roughly 2x the model's size.
+        required_gb = model_gb * 2
+        drive_root = Path(self._cache_dir).resolve().anchor
+        free_gb = shutil.disk_usage(drive_root).free / 1024**3
+        if required_gb > free_gb:
+            logger.warning(
+                "%s needs ~%.1f GB free (download + layer split) but only %.1f GB available at %s",
+                model_id, required_gb, free_gb, self._cache_dir,
+            )
+
     def _run(self, prompt: str, model_id: str, max_tokens: int) -> BenchmarkResult:
+        self._check_disk_space(model_id)
         try:
             import torch  # noqa: PLC0415
             from airllm import AutoModel  # noqa: PLC0415

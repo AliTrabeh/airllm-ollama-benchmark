@@ -252,7 +252,22 @@ decision while the actual described behavior did not exist:
   auth-related.
 
 Both are now genuinely covered, with real tests (`test_hf_baseline_service_robustness.py`) —
-not just inherited from the original `test_hf_baseline_service.py`. 200 tests passing, 96.28%
-coverage. This confirms the second pass's own caveat: a "legitimate consolidation" verdict at
-the class level does not guarantee every individual planned behavior survived the consolidation
-— each one needs checking, not just the file/class mapping.
+not just inherited from the original `test_hf_baseline_service.py`. This confirms the second
+pass's own caveat: a "legitimate consolidation" verdict at the class level does not guarantee
+every individual planned behavior survived the consolidation — each one needs checking, not
+just the file/class mapping.
+
+Applying the same method-by-method check to the parallel `05_airllm` group found one more:
+
+- **PRD-05-004 (`AirLLMService._check_disk_space`)** — marked `DONE`, target file
+  `airllm_service.py`, but no `_check_disk_space` method or `shutil` usage existed anywhere in
+  the file. **Fixed:** added `_check_disk_space(model_id)`, estimating required space as 2x the
+  model's FP16 size (AirLLM keeps both the downloaded checkpoint and the split-per-layer copy
+  on disk simultaneously during the one-time split step — directly observed earlier this
+  session as a real ~27 GB-on-an-8GB-card disk-space incident). Warns via `logging.warning` when
+  free space at the cache drive's root falls short. 3 new tests
+  (`test_airllm_service_disk_check.py`), verified against both a real low-pressure path (C:,
+  ~40 GB free, correctly silent since that's above the ~28 GB threshold for Mistral-7B) and a
+  mocked insufficient-space case.
+
+203 tests passing, 96.34% coverage, ruff clean, all files ≤150 lines.
