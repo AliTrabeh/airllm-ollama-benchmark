@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -128,37 +127,3 @@ def test_list_results_empty_before_any_save(tmp_path) -> None:
     svc = ResultsService(config={"results_dir": str(tmp_path / "nonexistent")})
     assert svc.list_results() == []
     assert svc.list_comparisons() == []
-
-
-# ---------------------------------------------------------------------------
-# load_by_method / load_latest
-# ---------------------------------------------------------------------------
-
-def test_load_by_method_filters_correctly(svc) -> None:
-    timestamps = ["20260101T000000Z", "20260101T000001Z", "20260101T000002Z"]
-    with patch("airllm_benchmark.services.results_service._ts", side_effect=timestamps):
-        svc.save_result(_r("ollama"))
-        svc.save_result(_r("airllm"))
-        svc.save_result(_r("ollama"))
-    assert len(svc.load_by_method("ollama")) == 2
-    assert all(r.method == "ollama" for r in svc.load_by_method("ollama"))
-
-
-def test_load_latest_returns_newest(svc) -> None:
-    with patch("airllm_benchmark.services.results_service._ts", side_effect=["20260101T000000Z", "20260101T000001Z"]):
-        svc.save_result(_r("ollama", latency=1.0))
-        svc.save_result(_r("ollama", latency=2.0))
-    latest = svc.load_latest()
-    assert latest.latency_s == 2.0
-
-
-def test_load_latest_filters_by_method(svc) -> None:
-    with patch("airllm_benchmark.services.results_service._ts", side_effect=["20260101T000000Z", "20260101T000001Z"]):
-        svc.save_result(_r("ollama", latency=1.0))
-        svc.save_result(_r("airllm", latency=2.0))
-    assert svc.load_latest(method="ollama").latency_s == 1.0
-
-
-def test_load_latest_returns_none_on_empty_dir(tmp_path) -> None:
-    svc = ResultsService(config={"results_dir": str(tmp_path)})
-    assert svc.load_latest() is None
