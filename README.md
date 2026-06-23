@@ -323,7 +323,7 @@ for p in paths:
 EOF
 ```
 
-Four charts are saved to `assets/`:
+Four comparison charts are saved to `assets/`:
 
 | File | Description |
 |------|-------------|
@@ -331,6 +331,10 @@ Four charts are saved to `assets/`:
 | `memory_grouped_bar.png` | Peak RAM vs VRAM per method (MB) |
 | `throughput_bar.png` | Token throughput per method (tokens/s) |
 | `trade_off_scatter.png` | Latency vs RAM trade-off scatter plot |
+
+Plus a parameter-sensitivity line chart (`latency_vs_tokens_line.png`, generated separately
+via `ChartService.plot_latency_vs_tokens_line()`) — see [`docs/COSTS.md`](docs/COSTS.md) for
+the full sensitivity analysis.
 
 Or open the notebook for interactive analysis:
 
@@ -368,20 +372,28 @@ airllm-ollama-benchmark/
 │   ├── unit/                    # Per-module unit tests (all external calls mocked)
 │   └── integration/             # End-to-end pipeline tests (services mocked)
 ├── notebooks/
-│   └── results_analysis.ipynb  # 8-section results analysis notebook
+│   └── results_analysis.ipynb  # 9-section results analysis notebook
 ├── docs/
 │   ├── PLAN.md                  # Architecture + ADRs
 │   ├── ARCHITECTURE.md          # C4 diagrams
+│   ├── HARDWARE_PROFILES.md     # Actual hardware specs + AirLLM-vs-HF analysis
+│   ├── COSTS.md                 # Cost/resource breakdown with real measured data
 │   ├── MODEL_SELECTION.md       # Model choice rationale
-│   └── prds/                    # 561 micro-PRDs across 14 groups
+│   └── prds/                    # 570 micro-PRDs across 14 groups
 ├── config/
 │   ├── setup.json               # Non-secret settings
-│   └── rate_limits.json         # Gatekeeper rate limits
+│   ├── rate_limits.json         # Gatekeeper rate limits
+│   └── hardware_profiles.json   # Target hardware spec for HardwareProfiler
+├── data/                        # Reserved (unused — models/results/assets cover all data needs)
 ├── results/                     # Benchmark JSON output (git-ignored)
 ├── assets/                      # PNG charts (git-ignored)
 ├── models/                      # Downloaded model cache (git-ignored)
+├── .github/workflows/ci.yml     # Lint + test on every push
+├── Makefile                     # lint/test/run-* shortcuts
 ├── pyproject.toml               # Build + lint + test config
 ├── uv.lock                      # Locked dependency versions
+├── LICENSE                      # MIT
+├── CHANGELOG.md                 # v1.00 entry
 └── .env.example                 # All environment variables (no secrets)
 ```
 
@@ -442,24 +454,26 @@ No other existing files need to change.
 
 ```bash
 # Lint (must pass with 0 errors)
-uv run ruff check src/
+uv run ruff check src/ tests/
 
 # Tests with coverage (must reach ≥ 85%)
 uv run pytest tests/
 
-# Check all source files are ≤ 150 lines
-find src -name "*.py" | xargs wc -l | sort -rn | head -10
+# Check all files (src/ and tests/) are ≤ 150 lines
+find src tests -name "*.py" | xargs wc -l | sort -rn | head -10
+
+# Or just: make lint && make test
 ```
 
-Current status: **159 tests | 95.62% coverage | ruff 0 errors | all files ≤ 150 lines**
+Current status: **195 tests | 96.18% coverage | ruff 0 errors | all files (src/ and tests/) ≤ 150 lines**
 
 ---
 
 ## Contribution Guidelines
 
 - All code through the SDK layer — no direct service calls from CLI or tests
-- Max 150 lines per source file (split if needed)
-- Zero Ruff errors (`uv run ruff check src/`)
+- Max 150 lines per file, in both `src/` and `tests/` (split if needed)
+- Zero Ruff errors (`uv run ruff check src/ tests/`)
 - Every new function/class must have at least one test
 - No hardcoded values — use `cfg.get()` or `os.environ.get()`
 - No secrets in code — use `.env` (git-ignored)
@@ -473,11 +487,13 @@ Current status: **159 tests | 95.62% coverage | ruff 0 errors | all files ≤ 15
 **License:** MIT — see LICENSE file.
 
 **Model licenses:**
-- TinyLlama-1.1B-Chat: Apache 2.0
+- Phi-3-mini-4k-instruct: MIT
 - Mistral-7B-v0.1: Apache 2.0
+- Llama 3.2 (3B, via Ollama): Llama 3.2 Community License
+- TinyLlama-1.1B-Chat (used during early development/testing): Apache 2.0
 
 **Third-party libraries:** requests, psutil, matplotlib, pandas, transformers, torch,
-airllm — see `pyproject.toml` for versions.
+airllm, jupyter — see `pyproject.toml` for versions.
 
 ---
 
