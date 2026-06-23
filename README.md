@@ -8,12 +8,16 @@ can run models that are too large for normal RAM/VRAM — at the cost of higher 
 | Method | Model | Goal |
 |--------|-------|------|
 | **Ollama** | llama3.2:3b | Fast pipeline verification, latency baseline |
-| **HuggingFace Baseline** | TinyLlama-1.1B-Chat | Standard GPU loading, VRAM baseline |
+| **HuggingFace Baseline** | Phi-3-mini-4k-instruct (default) | Standard GPU loading, VRAM baseline |
 | **AirLLM** | Mistral-7B-v0.1 | CPU layer-paging — runs 14 GB model on 8 GB VRAM GPU |
 
-**Hypothesis:** A 14 GB fp16 model (Mistral-7B) exceeds the RTX 3060 Ti's 8 GB VRAM and will
-OOM with standard loading. AirLLM's virtual-memory paging (one layer at a time via `mmap`)
-lets it run on CPU, trading latency for feasibility.
+**Hypothesis:** A 14 GB fp16 model (Mistral-7B) exceeds the RTX 3060 Ti's 8 GB VRAM and
+standard loading should fail or degrade badly. **Confirmed, with a twist:** on this
+machine's NVIDIA Windows driver, the naive load doesn't crash with a clean CUDA OOM — the
+driver's system-memory fallback silently pages the overflow into RAM instead. It "works,"
+but takes 20.6 minutes and never actually respects the 8 GB VRAM limit (reports 13.8 GB
+"VRAM" used). AirLLM, run on the exact same model, is 1.75× faster *and* keeps VRAM near
+zero throughout. Full breakdown in [`docs/COSTS.md`](docs/COSTS.md).
 
 ---
 
@@ -128,13 +132,13 @@ airllm-benchmark v1.00  |  method=ollama  |  tokens=20
 Saved → results/run_20260622T120000Z_ollama.json
 ```
 
-### Run HuggingFace baseline (standard GPU loading, ~3–5 s)
+### Run HuggingFace baseline (standard GPU loading, ~55 s cached)
 
 ```bash
 uv run airllm-benchmark --method hf_baseline --max-tokens 20
 ```
 
-First run downloads TinyLlama-1.1B (~2.2 GB) to `./models/`. Subsequent runs use the cache.
+First run downloads Phi-3-mini-4k-instruct (~7.6 GB) to `./models/`. Subsequent runs use the cache.
 
 ### Run AirLLM (CPU layer-paging, large model, minutes)
 
@@ -199,7 +203,7 @@ Copy `.env.example` to `.env` and fill in your values. Never commit `.env`.
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `HF_TOKEN` | **Yes** | HuggingFace API token — get one at huggingface.co/settings/tokens |
-| `MODEL_ID` | No | Override HF baseline model (default: `TinyLlama/TinyLlama-1.1B-Chat-v1.0`) |
+| `MODEL_ID` | No | Override HF baseline model (default: `microsoft/Phi-3-mini-4k-instruct`) |
 | `AIRLLM_MODEL_ID` | No | Override AirLLM model (default: `mistralai/Mistral-7B-v0.1`) |
 | `OLLAMA_MODEL` | No | Override Ollama model name (default: `llama3.2:3b`) |
 | `MAX_NEW_TOKENS` | No | Global token limit (default: `20` — keep small for AirLLM) |
@@ -213,7 +217,7 @@ Non-secret settings committed to the repository. All values overridable via env 
 
 ```json
 {
-    "model_id":          "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+    "model_id":          "microsoft/Phi-3-mini-4k-instruct",
     "airllm_model_id":   "mistralai/Mistral-7B-v0.1",
     "ollama_model":      "llama3.2:3b",
     "ollama_url":        "http://localhost:11434",
@@ -258,8 +262,10 @@ Measured in a single `--method all` run with all models pre-cached (GPU: RTX 306
 **Key observations:**
 - AirLLM's energy cost per run is ~85× higher than Ollama due to the long inference time
 - AirLLM uses **near-zero VRAM** (8 MB) — it runs entirely on CPU via `mmap` layer paging
-- HF Baseline already peaks at 7.3 GB VRAM on Phi-3-mini (an 8 GB card) — the next model
-  size up would OOM with no graceful fallback, unlike AirLLM
+- HF Baseline already peaks at 7.3 GB VRAM on Phi-3-mini (an 8 GB card) — pushed further
+  (Mistral-7B, same path) it doesn't cleanly OOM on this driver, it silently falls back to
+  system RAM and runs 1.75× slower than AirLLM on the identical model (see same-model
+  comparison in [`docs/COSTS.md`](docs/COSTS.md))
 - Ollama's quantized model is also the smallest on disk (1.9 GB) — quantization buys
   speed and storage efficiency together
 

@@ -22,6 +22,36 @@ the system default HF cache instead of the configured `models_dir`, so the disk-
 probe looked in the wrong place. The model is genuinely ~14 GB on disk; future runs
 measure this correctly.
 
+## Same-model comparison: Mistral-7B-v0.1 (the assignment's actual core ask)
+
+The assignment's 5-step recipe asks for one specific comparison: take the **same** large
+model, show normal loading fails or is impractically slow, then show that *same* model
+succeeds via AirLLM. The table above doesn't quite do this — it uses Phi-3-mini for the HF
+baseline and Mistral-7B for AirLLM. Here's the direct, same-model comparison:
+
+| Method | Model | Latency | RAM Peak | "VRAM" Peak | Disk | Tokens/s |
+|--------|-------|---------|----------|--------------|------|----------|
+| HF Baseline (naive `.to("cuda")`) | Mistral-7B-v0.1 | **1237.95 s (~20.6 min)** | 20,711 MB | **13,825 MB** | 13.49 GB | 0.016 |
+| AirLLM (CPU layer paging) | Mistral-7B-v0.1 | **706.67 s (~11.8 min)** | 14,916 MB | 8 MB | ~14 GB | 0.028 |
+
+**This did not produce a clean CUDA out-of-memory crash — and that result is itself the
+most interesting finding.** Mistral-7B's fp16 weights (~14 GB) exceed the RTX 3060 Ti's 8 GB
+VRAM by nearly 2×. On older drivers or Linux, `.to("cuda")` on a model this size raises a
+hard `CUDA error: out of memory`. On this machine's NVIDIA Windows driver, though, the
+driver's *system memory fallback* feature kicked in instead: when a CUDA allocation
+exceeds physical VRAM, the driver transparently pages the overflow into system RAM rather
+than failing the allocation. The reported VRAM peak (13.8 GB on an 8 GB card) is only
+possible because of this — it's not a measurement error, it's CUDA lying to PyTorch about
+how much memory it successfully allocated.
+
+The practical consequence: the naive HF baseline *did* run on this model, but at a severe,
+silent performance cost — **1.75× slower than AirLLM**, while using **~39% more RAM** and
+never actually respecting the 8 GB VRAM boundary it's supposed to operate within. AirLLM,
+by contrast, achieves both a faster result *and* genuinely honors the VRAM limit (8 MB
+peak) by never attempting to hold more than one layer on the GPU at a time. On hardware
+or drivers where the fallback isn't available, the HF baseline path would simply crash
+instead of degrading — AirLLM's behavior doesn't depend on this driver quirk to be safe.
+
 ## CPU time / disk
 
 - CPU/wall time is captured as `latency_s` in every result (see table above).
