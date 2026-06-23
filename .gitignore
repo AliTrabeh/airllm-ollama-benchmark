@@ -93,3 +93,6 @@ logs/
 *.tmp
 *.temp
 *.err
+
+# Claude Code local config (permissions, session metadata)
+.claude/
