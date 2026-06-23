@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from airllm_benchmark.main import _model_gb_from_name, main, parse_args
+from airllm_benchmark.main import main, parse_args
 from airllm_benchmark.models.benchmark_result import BenchmarkResult
 from airllm_benchmark.models.comparison_report import ComparisonReport
 
@@ -116,19 +116,3 @@ def test_main_single_saves_result(mock_sdk, mock_svc) -> None:
          patch("airllm_benchmark.main.ResultsService", return_value=mock_svc):
         main(["--method", "ollama"])
     mock_svc.save_result.assert_called_once()
-
-
-# ---------------------------------------------------------------------------
-# _model_gb_from_name
-# ---------------------------------------------------------------------------
-
-def test_model_gb_from_name_parses_7b() -> None:
-    assert _model_gb_from_name("mistralai/Mistral-7B-v0.1") == 14.0
-
-
-def test_model_gb_from_name_parses_lowercase_b() -> None:
-    assert _model_gb_from_name("llama3.2:3b") == 6.0
-
-
-def test_model_gb_from_name_returns_none_when_no_size_in_name() -> None:
-    assert _model_gb_from_name("microsoft/Phi-3-mini-4k-instruct") is None

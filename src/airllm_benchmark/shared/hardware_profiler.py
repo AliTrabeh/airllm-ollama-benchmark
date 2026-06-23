@@ -7,10 +7,20 @@ same `model_gb` value can be reused across dtypes without the caller doing the m
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 # Size of a given dtype relative to FP16 (e.g. q4 is roughly a quarter the size).
 QUANT_RATIOS: dict[str, float] = {"fp16": 1.0, "q4": 0.25, "q2": 0.125}
+_BYTES_PER_PARAM_FP16 = 2.0
+
+
+def model_gb_from_name(model_id: str) -> float | None:
+    """Estimate a model's FP16 size in GB from a "...7B..." style name, if present."""
+    match = re.search(r"(\d+(?:\.\d+)?)[Bb](?![a-zA-Z])", model_id)
+    if not match:
+        return None
+    return float(match.group(1)) * _BYTES_PER_PARAM_FP16
 
 
 class HardwareProfiler:

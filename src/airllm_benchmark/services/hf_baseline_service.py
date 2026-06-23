@@ -8,10 +8,14 @@ from __future__ import annotations
 
 import contextlib
 import gc
+import logging
 
 from airllm_benchmark.models.benchmark_result import BenchmarkResult
 from airllm_benchmark.services.metrics_service import MetricsCollector
 from airllm_benchmark.shared.config import hf_model_dir_size_gb, load_config
+from airllm_benchmark.shared.hardware_profiler import HardwareProfiler, model_gb_from_name
+
+logger = logging.getLogger(__name__)
 
 
 def _cost_estimate(latency_s: float, tdp_w: float = 200.0) -> str:
@@ -29,7 +33,29 @@ class HFBaselineService:
         self._hf_token: str = cfg.get("hf_token", "")
 
     def run(self, prompt: str, model_id: str, max_tokens: int) -> BenchmarkResult:
-        return self._run(prompt, model_id, max_tokens)
+        try:
+            return self._run(prompt, model_id, max_tokens)
+        except OSError as exc:
+            msg = str(exc)
+            if self._hf_token:
+                msg = msg.replace(self._hf_token, "***")
+            elif "gated" in msg.lower() or "401" in msg or "403" in msg:
+                msg = f"{msg} (HF_TOKEN not set -- required for gated models, see .env.example)"
+            return BenchmarkResult.error_result("hf_baseline", model_id, prompt, msg)
+
+    def _check_memory_before_load(self, model_id: str, device: str) -> None:
+        model_gb = model_gb_from_name(model_id)
+        if model_gb is None:
+            return
+        dtype_gb = model_gb if device == "cuda" else model_gb * 2  # fp16 vs fp32
+        profile = HardwareProfiler().get_profile()
+        gpu = profile.get("gpu")
+        available_gb = gpu["vram_gb"] if device == "cuda" and gpu else profile["ram"]["available_gb"]
+        if dtype_gb > available_gb:
+            logger.warning(
+                "%s (~%.1f GB at this dtype) may exceed available %s (%.1f GB)",
+                model_id, dtype_gb, "VRAM" if device == "cuda" else "RAM", available_gb,
+            )
 
     def _run(self, prompt: str, model_id: str, max_tokens: int) -> BenchmarkResult:  # noqa: PLR0914
         try:
@@ -44,10 +70,8 @@ class HFBaselineService:
         device = self._device
         if device == "cuda" and not torch.cuda.is_available():
             device = "cpu"
-
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_id, cache_dir=self._cache_dir, token=token
-        )
+        self._check_memory_before_load(model_id, device)
+        tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=self._cache_dir, token=token)
 
         model = None
         output_text = ""

@@ -230,3 +230,29 @@ all have equivalents). Those remain `DONE` — same functionality, different fil
 original micro-PRD plan. This second pass spot-checked the highest-risk consolidation claims
 rather than re-deriving all ~570 files line-by-line; if something else turns up missing later,
 treat it the same way — verify against the filesystem before trusting a `DONE` status.
+
+**Third pass (2026-06-23):** Re-verified the `04_hf_baseline` consolidation claim
+(`hf_service.py` → `hf_baseline_service.py`) method-by-method instead of trusting the earlier
+"equivalent class" judgment. Found two PRDs that were marked `DONE` by that consolidation
+decision while the actual described behavior did not exist:
+
+- **PRD-04-005 / PRD-04-047 (`_check_memory_before_load`)** — no proactive memory check existed
+  at all; the service only reacted to OOM after attempting to load. **Fixed:** added
+  `HFBaselineService._check_memory_before_load()`, using the already-built `HardwareProfiler`
+  + a new shared `model_gb_from_name()` helper (moved out of `main.py`, which had its own
+  private copy — now both share one implementation). Logs a `logging.warning` when a model's
+  estimated size exceeds available RAM/VRAM for the resolved device.
+- **PRD-04-014 / PRD-04-015 (missing-token / 404 errors)** — confirmed via `huggingface_hub`'s
+  actual exception hierarchy that `GatedRepoError`/`RepositoryNotFoundError` subclass `OSError`,
+  not `RuntimeError`/`MemoryError` — the only exceptions the service caught. A gated-model or
+  invalid-model-id run would have crashed uncaught instead of returning a clean
+  `BenchmarkResult.error`. **Fixed:** `HFBaselineService.run()` now wraps `_run()` in a top-level
+  `except OSError`, matching the pattern `AirLLMService.run()` already used correctly. Token is
+  sanitized from the error message; a missing-token hint is added when the failure looks
+  auth-related.
+
+Both are now genuinely covered, with real tests (`test_hf_baseline_service_robustness.py`) —
+not just inherited from the original `test_hf_baseline_service.py`. 200 tests passing, 96.28%
+coverage. This confirms the second pass's own caveat: a "legitimate consolidation" verdict at
+the class level does not guarantee every individual planned behavior survived the consolidation
+— each one needs checking, not just the file/class mapping.

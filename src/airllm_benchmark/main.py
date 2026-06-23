@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 
 from airllm_benchmark.models.benchmark_result import BenchmarkResult
@@ -10,18 +9,8 @@ from airllm_benchmark.sdk.sdk import BenchmarkSDK
 from airllm_benchmark.services.results_service import ResultsService
 from airllm_benchmark.shared.config import load_config
 from airllm_benchmark.shared.constants import VALID_METHODS
-from airllm_benchmark.shared.hardware_profiler import HardwareProfiler
+from airllm_benchmark.shared.hardware_profiler import HardwareProfiler, model_gb_from_name
 from airllm_benchmark.shared.version import VERSION
-
-_BYTES_PER_PARAM_FP16 = 2.0
-
-
-def _model_gb_from_name(model_id: str) -> float | None:
-    """Estimate a model's FP16 size in GB from a "...7B..." style name, if present."""
-    match = re.search(r"(\d+(?:\.\d+)?)[Bb](?![a-zA-Z])", model_id)
-    if not match:
-        return None
-    return float(match.group(1)) * _BYTES_PER_PARAM_FP16
 
 
 def _print_hardware_summary(config: dict, method: str) -> None:
@@ -33,7 +22,7 @@ def _print_hardware_summary(config: dict, method: str) -> None:
     if method in ("airllm", "all"):
         model_ids.append(config.get("airllm_model_id", ""))
     for model_id in model_ids:
-        model_gb = _model_gb_from_name(model_id) if model_id else None
+        model_gb = model_gb_from_name(model_id) if model_id else None
         if model_gb:
             rec = profiler.recommend_quantization(model_gb)
             print(f"Recommended quantization for {model_id} (~{model_gb:.1f} GB @ FP16): {rec}")

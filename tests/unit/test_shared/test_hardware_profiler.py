@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from airllm_benchmark.shared.hardware_profiler import HardwareProfiler
+from airllm_benchmark.shared.hardware_profiler import HardwareProfiler, model_gb_from_name
 
 
 def test_detect_cpu_returns_dict_with_cpu_count() -> None:
@@ -117,3 +117,15 @@ def test_to_markdown_contains_gpu_row_when_no_gpu(tmp_path: Path) -> None:
     md = HardwareProfiler(profile_path=profile_file).to_markdown()
     assert "GPU" in md
     assert "none detected" in md
+
+
+def test_model_gb_from_name_parses_7b() -> None:
+    assert model_gb_from_name("mistralai/Mistral-7B-v0.1") == 14.0
+
+
+def test_model_gb_from_name_parses_lowercase_b() -> None:
+    assert model_gb_from_name("llama3.2:3b") == 6.0
+
+
+def test_model_gb_from_name_returns_none_when_no_size_in_name() -> None:
+    assert model_gb_from_name("microsoft/Phi-3-mini-4k-instruct") is None
