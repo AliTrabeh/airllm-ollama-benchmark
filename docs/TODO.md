@@ -271,3 +271,25 @@ Applying the same method-by-method check to the parallel `05_airllm` group found
   mocked insufficient-space case.
 
 203 tests passing, 96.34% coverage, ruff clean, all files ≤150 lines.
+
+Applying the same check to `03_ollama` found two more real gaps in `ollama_service.py`:
+
+- **PRD-03-012 (Timeout handling)** — only `requests.ConnectionError` was caught around the
+  POST call. `requests.Timeout` is a sibling exception, not a subclass, so a hung Ollama
+  request would propagate uncaught past `--method ollama`'s single-method error handling.
+- **PRD-03-013 / PRD-03-014 (non-200 HTTP / malformed JSON)** — `resp.raise_for_status()` and
+  `resp.json()` were called with no surrounding exception handling at all (only the 404 case
+  was special-cased). A 500 from Ollama or a malformed JSON body would crash uncaught.
+
+**Fixed:** added `OllamaTimeoutError` and `OllamaResponseError` (both `RuntimeError` subclasses,
+matching the existing `OllamaConnectionError`/`OllamaModelNotFoundError` pattern so they're
+handled uniformly by both `main.py`'s single-method catch and `sdk.py`'s per-method `run_all()`
+catch). 3 new tests (`test_ollama_service_errors.py`); one existing test
+(`test_http_error_propagates`) asserted the old, buggy "crashes uncaught" behavior and was
+corrected to assert the fix instead. Verified against a real successful Ollama run — no
+regression in the happy path.
+
+206 tests passing, 96.49% coverage, ruff clean, all files ≤150 lines. This is the fourth gap
+this strict pass has found by checking PRDs against the actual codebase method-by-method rather
+than trusting consolidation-level judgments — a clear pattern: every service module that was
+"consolidated and marked DONE" without per-method verification had at least one real, silent gap.

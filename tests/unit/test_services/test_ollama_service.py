@@ -104,9 +104,11 @@ def test_model_not_found_raises_with_pull_hint(svc) -> None:
         svc.run("Hello", "missing-model", 20)
 
 
-def test_http_error_propagates(svc) -> None:
+def test_http_error_raises_ollama_response_error(svc) -> None:
+    from airllm_benchmark.services.ollama_service import OllamaResponseError  # noqa: PLC0415
     with patch("requests.get", return_value=_get_ok()), \
-         patch("requests.post", return_value=_post_mock({}, status=500)), pytest.raises(requests.HTTPError):
+         patch("requests.post", return_value=_post_mock({}, status=500)), \
+         pytest.raises(OllamaResponseError):
         svc.run("Hello", "tinyllama", 20)
 
 

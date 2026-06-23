@@ -21,6 +21,14 @@ class OllamaModelNotFoundError(RuntimeError):
     """Requested model is not installed locally."""
 
 
+class OllamaTimeoutError(RuntimeError):
+    """Ollama did not respond within the configured timeout."""
+
+
+class OllamaResponseError(RuntimeError):
+    """Ollama returned a malformed or unexpected response."""
+
+
 def _cost_estimate(latency_s: float, tdp_w: float = 200.0) -> str:
     """Rough energy estimate: wall-clock time × combined CPU+GPU TDP."""
     kwh = latency_s / 3600 * tdp_w / 1000
@@ -74,14 +82,21 @@ class OllamaService:
                 raise OllamaConnectionError(
                     f"Lost connection to Ollama at {self._base_url}"
                 ) from exc
+            except requests.Timeout as exc:
+                raise OllamaTimeoutError(
+                    f"Ollama did not respond within {self._timeout}s at {self._base_url}"
+                ) from exc
 
         if resp.status_code == 404:
             raise OllamaModelNotFoundError(
                 f"Model '{model}' not found locally. Run: ollama pull {model}"
             )
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+            data = resp.json()
+        except (requests.HTTPError, ValueError) as exc:
+            raise OllamaResponseError(f"Ollama returned an unexpected response: {exc}") from exc
 
-        data = resp.json()
         snap = mc.snapshot
 
         tokens_generated: int = data.get("eval_count", 0)
